@@ -1,4 +1,4 @@
-package com.criel.train.member.config;
+package com.criel.train.gateway.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,14 +9,14 @@ import org.springframework.core.env.Environment;
 
 @SpringBootApplication
 @ComponentScan("com.criel")
-public class MemberApplication {
+public class GatewayApplication {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MemberApplication.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GatewayApplication.class);
 
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(MemberApplication.class);
+        SpringApplication app = new SpringApplication(GatewayApplication.class);
         Environment env = app.run(args).getEnvironment();
-        LOG.info("member启动成功...");
-        LOG.info("member地址:http://127.0.0.1:{}", env.getProperty("server.port"));
+        LOG.info("gateway启动成功...");
+        LOG.info("gateway地址:http://127.0.0.1:{}", env.getProperty("server.port"));
     }
 }
