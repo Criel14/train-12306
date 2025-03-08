@@ -14,8 +14,8 @@ public class MemberController {
     private MemberService memberService;
 
     @GetMapping("/testConnect")
-    public Integer testConnect() {
-        return memberService.testConnect();
+    public Long testConnect() {
+        return memberService.count();
     }
 
 }

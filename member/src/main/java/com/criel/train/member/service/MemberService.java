@@ -10,8 +10,8 @@ public class MemberService {
     @Autowired
     private MemberMapper memberMapper;
 
-    public int testConnect() {
-        return memberMapper.testConnect();
+    public long count() {
+        return memberMapper.countByExample(null);
     }
 
 }
