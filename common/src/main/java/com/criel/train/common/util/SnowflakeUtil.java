@@ -5,7 +5,7 @@ import cn.hutool.core.util.IdUtil;
 /**
  * 封装hutool雪花算法
  */
-public class SnowUtil {
+public class SnowflakeUtil {
 
     /**
      * TODO 以下2个值每台机器都不一样，后面可能需要配置到数据库，启动时从数据库读取
