@@ -4,6 +4,7 @@ import lombok.Data;
 
 /**
  * 通用返回对象，就是Result类，教程里叫做CommonResp
+ * 教程里是在业务里new，然后set值；我直接写上3个静态方法
  * @param <T>
  */
 @Data
