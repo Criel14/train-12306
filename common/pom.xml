@@ -45,6 +45,11 @@
             <artifactId>hutool-all</artifactId>
             <version>5.8.24</version>
         </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+        </dependency>
         <!-- 数据库 -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>

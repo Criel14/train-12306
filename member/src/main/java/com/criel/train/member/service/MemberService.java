@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import com.criel.train.member.domain.Member;
 import com.criel.train.member.domain.MemberExample;
 import com.criel.train.member.mapper.MemberMapper;
+import com.criel.train.member.req.MemberRegisterReq;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +22,11 @@ public class MemberService {
 
     /**
      * 会员注册功能，暂未完善，供测试
-     * @param mobile 手机号
+     * @param req 用户注册请求参数
      * @return 用户id
      */
-    public long register(String mobile) {
+    public long register(MemberRegisterReq req) {
+        String mobile = req.getMobile();
         // 重复检测
         MemberExample memberExample = new MemberExample();
         memberExample.createCriteria().andMobileEqualTo(mobile);

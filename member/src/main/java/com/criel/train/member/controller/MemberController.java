@@ -1,5 +1,7 @@
 package com.criel.train.member.controller;
 
+import com.criel.train.common.resp.CommonResp;
+import com.criel.train.member.req.MemberRegisterReq;
 import com.criel.train.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,13 +17,15 @@ public class MemberController {
     private MemberService memberService;
 
     @GetMapping("/testConnect")
-    public long testConnect() {
-        return memberService.count();
+    public CommonResp<Long> testConnect() {
+        Long count =memberService.count();
+        return CommonResp.success(count);
     }
 
     @PostMapping("/register")
-    public long  register(String mobile) {
-        return memberService.register(mobile);
+    public CommonResp<Long>  register(MemberRegisterReq req) {
+        Long memberId = memberService.register(req);
+        return CommonResp.success(memberId);
     }
 
 }
