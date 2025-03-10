@@ -5,9 +5,12 @@ import com.criel.train.common.resp.CommonResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.BindException;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.List;
 
 /**
  * 统一异常处理
@@ -48,14 +51,15 @@ public class ControllerExceptionHandler {
      * @param e
      * @return
      */
-//    @ExceptionHandler(value = BindException.class)
-//    @ResponseBody
-//    public CommonResp exceptionHandler(BindException e) {
-//        CommonResp commonResp = new CommonResp();
-//        LOG.error("校验异常：{}", e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-//        commonResp.setSuccess(false);
-//        commonResp.setMessage(e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-//        return commonResp;
-//    }
+    @ExceptionHandler(value = BindException.class)
+    @ResponseBody
+    public CommonResp exceptionHandler(BindException e) {
+        // BindException中可能有多个异常信息，先获取异常信息
+        List<ObjectError> allErrors = e.getBindingResult().getAllErrors();
+        List<String> exceptionDescs = allErrors.stream().map(ObjectError::getDefaultMessage).toList();
+        // 返回所有异常信息
+        LOG.error("校验异常：{}", exceptionDescs);
+        return CommonResp.error(String.join(",", exceptionDescs));
+    }
 
 }
