@@ -1,5 +1,6 @@
 package com.criel.train.common.config;
 
+import com.criel.train.common.exception.BusinessException;
 import com.criel.train.common.resp.CommonResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +35,13 @@ public class ControllerExceptionHandler {
      * @param e
      * @return
      */
-//    @ExceptionHandler(value = BusinessException.class)
-//    @ResponseBody
-//    public CommonResp exceptionHandler(BusinessException e) {
-//        CommonResp commonResp = new CommonResp();
-//        LOG.error("业务异常：{}", e.getE().getDesc());
-//        commonResp.setSuccess(false);
-//        commonResp.setMessage(e.getE().getDesc());
-//        return commonResp;
-//    }
+    @ExceptionHandler(value = BusinessException.class)
+    @ResponseBody
+    public CommonResp exceptionHandler(BusinessException e) {
+        String exceptionDesc = e.getAnEnum().getDesc();
+        LOG.error("业务异常：{}", exceptionDesc);
+        return CommonResp.error(exceptionDesc);
+    }
 
     /**
      * 校验异常统一处理

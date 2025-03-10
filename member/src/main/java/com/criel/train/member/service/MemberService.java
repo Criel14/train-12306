@@ -1,6 +1,8 @@
 package com.criel.train.member.service;
 
 import cn.hutool.core.collection.CollUtil;
+import com.criel.train.common.exception.BusinessException;
+import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.criel.train.member.domain.Member;
 import com.criel.train.member.domain.MemberExample;
 import com.criel.train.member.mapper.MemberMapper;
@@ -32,7 +34,7 @@ public class MemberService {
         memberExample.createCriteria().andMobileEqualTo(mobile);
         List<Member> memberList = memberMapper.selectByExample(memberExample);
         if (CollUtil.isNotEmpty(memberList)) {
-            throw new RuntimeException("手机号已被注册");
+            throw new BusinessException(BusinessExceptionEnum.MOBILE_IS_EXIST);
         }
 
         // 创建新member
