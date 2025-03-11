@@ -33,9 +33,8 @@ public class MemberController {
     }
 
     @PostMapping("/code")
-    public CommonResp<String> getCode(@Valid MemberGetCodeReq req) {
-        String code = memberService.getCode(req);
-        return CommonResp.success(code);
+    public void getCode(@Valid MemberGetCodeReq req) {
+        memberService.getCode(req);
     }
 
     @PostMapping("/login")

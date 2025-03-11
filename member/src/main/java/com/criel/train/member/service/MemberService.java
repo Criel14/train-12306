@@ -56,7 +56,7 @@ public class MemberService {
      * @param req 前端的发送验证码请求
      * @return
      */
-    public String getCode(MemberGetCodeReq req) {
+    public void getCode(MemberGetCodeReq req) {
         String mobile = req.getMobile();
         List<Member> memberList = selectByMobile(mobile);
         // 手机号不存在，则注册新用户
@@ -75,8 +75,6 @@ public class MemberService {
 
         // TODO 保存短信记录表:手机号，短信验证码，有效期，是否已使用，业务类型，发送时间，使用时间
         // TODO 对接短信通道，发送短信
-
-        return code;
     }
 
     /**
