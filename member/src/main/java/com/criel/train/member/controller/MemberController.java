@@ -1,6 +1,7 @@
 package com.criel.train.member.controller;
 
 import com.criel.train.common.resp.CommonResp;
+import com.criel.train.member.req.MemberGetCodeReq;
 import com.criel.train.member.req.MemberRegisterReq;
 import com.criel.train.member.service.MemberService;
 import jakarta.validation.Valid;
@@ -19,14 +20,19 @@ public class MemberController {
 
     @GetMapping("/testConnect")
     public CommonResp<Long> testConnect() {
-        Long count =memberService.count();
+        Long count = memberService.count();
         return CommonResp.success(count);
     }
 
     @PostMapping("/register")
-    public CommonResp<Long>  register(@Valid MemberRegisterReq req) {
+    public CommonResp<Long> register(@Valid MemberRegisterReq req) {
         Long memberId = memberService.register(req);
         return CommonResp.success(memberId);
+    }
+
+    @PostMapping("/getCode")
+    public void getCode(@Valid MemberGetCodeReq req) {
+        memberService.getCode(req);
     }
 
 }
