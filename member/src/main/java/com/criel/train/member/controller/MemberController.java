@@ -20,7 +20,7 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
-    @GetMapping("/testConnect")
+    @GetMapping("/test-connect")
     public CommonResp<Long> testConnect() {
         Long count = memberService.count();
         return CommonResp.success(count);
@@ -32,7 +32,7 @@ public class MemberController {
         return CommonResp.success(memberId);
     }
 
-    @PostMapping("/getCode")
+    @PostMapping("/code")
     public CommonResp<String> getCode(@Valid MemberGetCodeReq req) {
         String code = memberService.getCode(req);
         return CommonResp.success(code);
