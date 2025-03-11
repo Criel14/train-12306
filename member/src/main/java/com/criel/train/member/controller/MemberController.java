@@ -2,7 +2,9 @@ package com.criel.train.member.controller;
 
 import com.criel.train.common.resp.CommonResp;
 import com.criel.train.member.req.MemberGetCodeReq;
+import com.criel.train.member.req.MemberLoginReq;
 import com.criel.train.member.req.MemberRegisterReq;
+import com.criel.train.member.resp.MemberLoginResp;
 import com.criel.train.member.service.MemberService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +33,14 @@ public class MemberController {
     }
 
     @PostMapping("/getCode")
-    public void getCode(@Valid MemberGetCodeReq req) {
-        memberService.getCode(req);
+    public CommonResp<String> getCode(@Valid MemberGetCodeReq req) {
+        String code = memberService.getCode(req);
+        return CommonResp.success(code);
     }
 
+    @PostMapping("/login")
+    public CommonResp<MemberLoginResp> login(@Valid MemberLoginReq req) {
+        MemberLoginResp memberLoginResp = memberService.login(req);
+        return CommonResp.success(memberLoginResp);
+    }
 }
