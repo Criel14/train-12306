@@ -100,6 +100,10 @@ public class MemberService {
             throw new BusinessException(BusinessExceptionEnum.CODE_IS_EMPTY);
         }
         // TODO 查redis，判断验证码是否正确/过期等
+        // 这里先这样写
+        if (!code.equals("4321")) {
+            throw new BusinessException(BusinessExceptionEnum.CODE_IS_ERROR);
+        }
 
         MemberLoginResp memberLoginResp = new MemberLoginResp();
         BeanUtils.copyProperties(memberList.get(0), memberLoginResp);
