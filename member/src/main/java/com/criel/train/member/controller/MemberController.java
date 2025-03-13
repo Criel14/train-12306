@@ -30,8 +30,9 @@ public class MemberController {
     }
 
     @PostMapping("/code")
-    public void getCode(@Valid MemberGetCodeReq req) {
+    public CommonResp getCode(@Valid @RequestBody MemberGetCodeReq req) {
         memberService.getCode(req);
+        return CommonResp.success();
     }
 
     @PostMapping("/login")
