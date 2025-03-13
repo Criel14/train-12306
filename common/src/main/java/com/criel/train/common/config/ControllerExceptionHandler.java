@@ -57,9 +57,11 @@ public class ControllerExceptionHandler {
         // BindException中可能有多个异常信息，先获取异常信息
         List<ObjectError> allErrors = e.getBindingResult().getAllErrors();
         List<String> exceptionDescs = allErrors.stream().map(ObjectError::getDefaultMessage).toList();
-        // 返回所有异常信息
+        // 返回异常信息
         LOG.error("校验异常：{}", exceptionDescs);
-        return CommonResp.error(String.join(",", exceptionDescs));
+        // return CommonResp.error(String.join(",", exceptionDescs));
+        // 仅返回第一个信息
+        return CommonResp.error(exceptionDescs.get(0));
     }
 
 }
