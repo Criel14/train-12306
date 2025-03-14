@@ -29,6 +29,7 @@ public class MemberController {
         return CommonResp.success(count);
     }
 
+    // 并未使用
     @PostMapping("/register")
     public CommonResp<Long> register(@Valid @RequestBody MemberRegisterReq req) {
         Long memberId = memberService.register(req);

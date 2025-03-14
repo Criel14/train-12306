@@ -46,11 +46,16 @@ public class JwtUtil {
      * @return
      */
     public static boolean validate(String token, String key) {
-        JWT jwt = JWTUtil.parseToken(token).setKey(key.getBytes());
-        // validate包含了verify
-        boolean validate = jwt.validate(0);
-        LOG.info("JWT token校验结果：{}", validate);
-        return validate;
+        try {
+            JWT jwt = JWTUtil.parseToken(token).setKey(key.getBytes());
+            // validate包含了verify
+            boolean validate = jwt.validate(0);
+            LOG.info("JWT token校验结果：{}", validate);
+            return validate;
+        } catch (Exception e) {
+            LOG.info("JWT token校验异常：{}", e.getMessage());
+            return false;
+        }
     }
 
     /**

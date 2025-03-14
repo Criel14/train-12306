@@ -1,5 +1,11 @@
-GET http://localhost:8000/member/member/testConnect
+GET http://localhost:8000/member/member/test-connect
 Accept: application/json
+
+###
+
+GET http://localhost:8000/member/member/xxx
+Accept: application/json
+token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTg5OTAyNzk0MDM2MDk4MjUyOCwibW9iaWxlIjoiMTM4ODg4ODg4ODgiLCJpYXQiOjE3NDE5NjU1NzYsImV4cCI6MTc0MTk3Mjc3NiwibmJmIjoxNzQxOTY1NTc2fQ.nPEO9osIs78nEcA9CnNxaVIPvtrtjANbU60ruCBug3Q
 
 ###
 
