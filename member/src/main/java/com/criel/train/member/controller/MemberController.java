@@ -1,6 +1,9 @@
 package com.criel.train.member.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.criel.train.common.properties.JwtProperties;
 import com.criel.train.common.resp.CommonResp;
+import com.criel.train.common.util.JwtUtil;
 import com.criel.train.member.req.MemberGetCodeReq;
 import com.criel.train.member.req.MemberLoginReq;
 import com.criel.train.member.req.MemberRegisterReq;
@@ -16,6 +19,10 @@ public class MemberController {
 
     @Autowired
     private MemberService memberService;
+
+    // 临时
+    @Autowired
+    private JwtProperties jwtProperties;
 
     @GetMapping("/test-connect")
     public CommonResp<Long> testConnect() {
@@ -38,6 +45,11 @@ public class MemberController {
     @PostMapping("/login")
     public CommonResp<MemberLoginResp> login(@Valid @RequestBody MemberLoginReq req) {
         MemberLoginResp memberLoginResp = memberService.login(req);
+
+        // (临时)获取token
+        String token = JwtUtil.createToken(BeanUtil.beanToMap(memberLoginResp), jwtProperties.getMemberSecretKey(), jwtProperties.getMemberTtl());
+        memberLoginResp.setToken(token);
+
         return CommonResp.success(memberLoginResp);
     }
 

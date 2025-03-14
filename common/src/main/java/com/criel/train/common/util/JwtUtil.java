@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+/**
+ * JWT工具类
+ * 需要配合拦截器
+ */
 public class JwtUtil {
     private static final Logger LOG = LoggerFactory.getLogger(JwtUtil.class);
 

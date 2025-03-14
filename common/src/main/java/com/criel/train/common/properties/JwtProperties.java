@@ -9,5 +9,5 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("train.jwt")
 public class JwtProperties {
     private String memberSecretKey;
-    private String memberTtl;
+    private int memberTtl;
 }
