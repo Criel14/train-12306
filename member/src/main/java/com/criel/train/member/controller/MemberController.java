@@ -40,4 +40,5 @@ public class MemberController {
         MemberLoginResp memberLoginResp = memberService.login(req);
         return CommonResp.success(memberLoginResp);
     }
+
 }
