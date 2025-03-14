@@ -20,7 +20,6 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
-    // 临时
     @Autowired
     private JwtProperties jwtProperties;
 
@@ -45,11 +44,12 @@ public class MemberController {
     @PostMapping("/login")
     public CommonResp<MemberLoginResp> login(@Valid @RequestBody MemberLoginReq req) {
         MemberLoginResp memberLoginResp = memberService.login(req);
-
-        // (临时)获取token
-        String token = JwtUtil.createToken(BeanUtil.beanToMap(memberLoginResp), jwtProperties.getMemberSecretKey(), jwtProperties.getMemberTtl());
+        // 获取token
+        String token = JwtUtil.createToken(
+                BeanUtil.beanToMap(memberLoginResp),
+                jwtProperties.getMemberSecretKey(),
+                jwtProperties.getMemberTtl());
         memberLoginResp.setToken(token);
-
         return CommonResp.success(memberLoginResp);
     }
 
