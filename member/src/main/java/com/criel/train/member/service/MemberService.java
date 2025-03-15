@@ -2,12 +2,16 @@ package com.criel.train.member.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.criel.train.common.constant.BusinessConstant;
+import com.criel.train.common.constant.RedisKeyConstant;
 import com.criel.train.common.exception.BusinessException;
 import com.criel.train.common.exception.BusinessExceptionEnum;
+import com.criel.train.common.properties.SmsProperties;
 import com.criel.train.common.util.SnowflakeUtil;
 import com.criel.train.member.config.MemberApplication;
 import com.criel.train.member.domain.Member;
 import com.criel.train.member.domain.MemberExample;
+import com.criel.train.member.domain.SmsRecord;
 import com.criel.train.member.mapper.MemberMapper;
 import com.criel.train.member.req.MemberGetCodeReq;
 import com.criel.train.member.req.MemberLoginReq;
@@ -17,9 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class MemberService {
@@ -28,12 +36,19 @@ public class MemberService {
     @Autowired
     private MemberMapper memberMapper;
 
+    @Autowired
+    private SmsProperties smsProperties;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     public long count() {
         return memberMapper.countByExample(null);
     }
 
     /**
-     * TODO 会员注册功能，供测试
+     * 会员注册功能（测试用）
+     *
      * @param req 用户注册请求参数
      * @return 用户id
      */
@@ -51,8 +66,10 @@ public class MemberService {
     }
 
     /**
-     * 生成验证码，发送短信给前端(?)
+     * 生成验证码
+     * TODO 发送短信
      * 这里只是形式...实际上就是以4321为验证码...
+     *
      * @param req 前端的发送验证码请求
      * @return
      */
@@ -69,16 +86,25 @@ public class MemberService {
         }
 
         // 生成验证码
-//        String code = RandomUtil.randomString(4);
+        // String code = RandomUtil.randomString(4);
+        // 项目中没有真的去发短信，就固定为4321了
         String code = "4321";
         LOG.info("生成的验证码为:{}", code);
 
-        // TODO 保存短信记录表:手机号，短信验证码，有效期，是否已使用，业务类型，发送时间，使用时间
+        // 保存短信记录：手机号、验证码、有效时间（毫秒）、业务类型、发送时间
+        SmsRecord smsRecord = new SmsRecord(
+                mobile, code,
+                smsProperties.getExpireTime(),
+                BusinessConstant.LOGIN,
+                LocalDateTime.now());
+        this.saveSmsRecord(smsRecord);
+
         // TODO 对接短信通道，发送短信
     }
 
     /**
      * 登录
+     *
      * @param req
      * @return
      */
@@ -97,21 +123,29 @@ public class MemberService {
         if (code == null || code.isEmpty()) {
             throw new BusinessException(BusinessExceptionEnum.CODE_IS_EMPTY);
         }
-        // TODO 查redis，判断验证码是否正确/过期等
-        // 这里先这样写
-        if (!code.equals("4321")) {
-            throw new BusinessException(BusinessExceptionEnum.CODE_IS_ERROR);
+
+        // 校验验证码
+        int verifyRes = this.verifyCode(mobile, code);
+        LOG.info("验证码校验结果：{}", verifyRes);
+        switch (verifyRes) {
+            case 0:
+                throw new BusinessException(BusinessExceptionEnum.CODE_IS_EXPIRED);
+            case -1:
+                throw new BusinessException(BusinessExceptionEnum.CODE_IS_ERROR);
+            default:
+                break;
         }
 
+        // 验证码正确，则返回用户信息
         MemberLoginResp memberLoginResp = new MemberLoginResp();
         BeanUtils.copyProperties(memberList.get(0), memberLoginResp);
         return memberLoginResp;
     }
 
 
-
     /**
      * 创建新用户
+     *
      * @param mobile
      * @return
      */
@@ -133,5 +167,41 @@ public class MemberService {
         MemberExample memberExample = new MemberExample();
         memberExample.createCriteria().andMobileEqualTo(mobile);
         return memberMapper.selectByExample(memberExample);
+    }
+
+    /**
+     * 保存短信记录到redis
+     *
+     * @param smsRecord
+     */
+    private void saveSmsRecord(SmsRecord smsRecord) {
+        LOG.info("保存短信记录到redis：{}",smsRecord);
+        // 定义key
+        String key = RedisKeyConstant.SMS_CODE_KEY + smsRecord.getMobile();
+        // 保存
+        redisTemplate.opsForValue().set(key, smsRecord, smsProperties.getExpireTime(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * 检验短信验证码
+     *
+     * @param mobile
+     * @param inputCode
+     * @return 验证码过期或未获取：0；验证码正确：1；验证码错误 -1
+     */
+    public int verifyCode(String mobile, String inputCode) {
+        String key = RedisKeyConstant.SMS_CODE_KEY + mobile;
+        SmsRecord record = (SmsRecord) redisTemplate.opsForValue().get(key);
+        if (record == null) {
+            return 0; // 没有验证码记录，验证码已过期
+        }
+        // 校验验证码：是否正确
+        if (!record.getCode().equals(inputCode)) {
+            return -1;
+        }
+        // 删除验证码
+        LOG.info("删除redis中的验证码信息：{}", key);
+        redisTemplate.delete(key);
+        return 1;
     }
 }

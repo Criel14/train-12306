@@ -79,6 +79,7 @@ public class MemberController {
                 BeanUtil.beanToMap(memberLoginResp),
                 jwtProperties.getMemberSecretKey(),
                 jwtProperties.getMemberTtl());
+        // 为返回信息加上token
         memberLoginResp.setToken(token);
         return CommonResp.success(memberLoginResp);
     }
