@@ -22,6 +22,7 @@ public class CommonResp<T> {
 
     /**
      * 返回泛型数据，自定义类型
+     * 这里叫data更好一点，但是教程是content，就这样吧
      */
     private T content;
 
