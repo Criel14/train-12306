@@ -7,7 +7,7 @@ create table `member`
     unique key `mobile_unique` (`mobile`)
 ) engine = innodb
   default charset = utf8mb4 comment ='会员';
-# 用户用手机号+验证码登录，不设置密码
+# 用户用手机号 + 验证码登录，不设置密码
 
 drop table if exists `passenger`;
 create table `passenger`
