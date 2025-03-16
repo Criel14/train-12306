@@ -1,7 +1,6 @@
 package com.criel.train.member.service;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.RandomUtil;
 import com.criel.train.common.constant.BusinessConstant;
 import com.criel.train.common.constant.RedisKeyConstant;
 import com.criel.train.common.exception.BusinessException;
@@ -9,8 +8,8 @@ import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.criel.train.common.properties.SmsProperties;
 import com.criel.train.common.util.SnowflakeUtil;
 import com.criel.train.member.config.MemberApplication;
-import com.criel.train.member.domain.Member;
-import com.criel.train.member.domain.MemberExample;
+import com.criel.train.member.domain.generated.Member;
+import com.criel.train.member.domain.generated.MemberExample;
 import com.criel.train.member.domain.SmsRecord;
 import com.criel.train.member.mapper.MemberMapper;
 import com.criel.train.member.req.MemberGetCodeReq;
@@ -25,7 +24,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 

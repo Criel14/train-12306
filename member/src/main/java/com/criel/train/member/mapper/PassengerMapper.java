@@ -1,7 +1,7 @@
 package com.criel.train.member.mapper;
 
-import com.criel.train.member.domain.Passenger;
-import com.criel.train.member.domain.PassengerExample;
+import com.criel.train.member.domain.generated.Passenger;
+import com.criel.train.member.domain.generated.PassengerExample;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 

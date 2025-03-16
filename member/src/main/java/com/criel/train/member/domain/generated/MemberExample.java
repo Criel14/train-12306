@@ -1,4 +1,4 @@
-package com.criel.train.member.domain;
+package com.criel.train.member.domain.generated;
 
 import java.util.ArrayList;
 import java.util.List;
