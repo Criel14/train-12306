@@ -1,5 +1,6 @@
 package com.criel.train.member.service;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.criel.train.common.constant.BusinessConstant;
 import com.criel.train.common.constant.RedisKeyConstant;
@@ -18,7 +19,6 @@ import com.criel.train.member.req.MemberRegisterReq;
 import com.criel.train.member.resp.MemberLoginResp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -135,8 +135,7 @@ public class MemberService {
         }
 
         // 验证码正确，则返回用户信息
-        MemberLoginResp memberLoginResp = new MemberLoginResp();
-        BeanUtils.copyProperties(memberList.get(0), memberLoginResp);
+        MemberLoginResp memberLoginResp = BeanUtil.copyProperties(memberList.get(0), MemberLoginResp.class);
         return memberLoginResp;
     }
 
