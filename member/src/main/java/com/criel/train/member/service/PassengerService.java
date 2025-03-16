@@ -22,13 +22,13 @@ public class PassengerService {
      */
     public void save(PassengerSaveReq passengerSaveReq) {
         Passenger passenger = BeanUtil.copyProperties(passengerSaveReq, Passenger.class);
-        passengerMapper.insert(passenger);
         // 更新id、创建时间字段
         // TODO 还需要关联会员，修改memberId字段
         Date currentDate = new Date();
         passenger.setId(SnowflakeUtil.getSnowflakeNextId());
         passenger.setCreateTime(currentDate);
         passenger.setUpdateTime(currentDate);
+        passengerMapper.insert(passenger);
     }
 
 
