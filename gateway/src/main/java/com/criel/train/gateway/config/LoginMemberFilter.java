@@ -1,7 +1,7 @@
 package com.criel.train.gateway.config;
 
-import com.criel.train.common.properties.JwtProperties;
-import com.criel.train.common.util.JwtUtil;
+import com.criel.train.gateway.config.properties.JwtProperties;
+import com.criel.train.gateway.config.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
