@@ -2,14 +2,12 @@ package com.criel.train.member.controller;
 
 import com.criel.train.common.context.LoginMemberContext;
 import com.criel.train.common.resp.CommonResp;
-import com.criel.train.member.config.MemberApplication;
+import com.criel.train.common.resp.PageResp;
 import com.criel.train.member.req.PassengerQueryReq;
 import com.criel.train.member.req.PassengerSaveReq;
 import com.criel.train.member.resp.PassengerQueryResp;
 import com.criel.train.member.service.PassengerService;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,8 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/passenger")
 public class PassengerController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MemberApplication.class);
 
     @Autowired
     PassengerService passengerService;
@@ -40,10 +36,10 @@ public class PassengerController {
      * @return
      */
     @GetMapping("/query-list")
-    public CommonResp<List<PassengerQueryResp>> queryList(@Valid PassengerQueryReq passengerQueryReq) {
+    public CommonResp<PageResp<PassengerQueryResp>> queryList(@Valid PassengerQueryReq passengerQueryReq) {
         // 赋值memberId
         passengerQueryReq.setMemberId(LoginMemberContext.getId());
-        List<PassengerQueryResp> passengerQueryRespList = passengerService.queryList(passengerQueryReq);
+        PageResp<PassengerQueryResp> passengerQueryRespList = passengerService.queryList(passengerQueryReq);
         return CommonResp.success(passengerQueryRespList);
     }
 
