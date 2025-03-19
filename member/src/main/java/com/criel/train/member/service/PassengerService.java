@@ -29,19 +29,25 @@ public class PassengerService {
     PassengerMapper passengerMapper;
 
     /**
-     * 保存用户
-     *
+     * 新增/修改乘车人
+     * 如果passengerSaveReq参数中有id，则为修改，没有则为新增
      * @param passengerSaveReq
      */
     public void save(PassengerSaveReq passengerSaveReq) {
         Passenger passenger = BeanUtil.copyProperties(passengerSaveReq, Passenger.class);
-        // 更新id、创建时间字段
         Date currentDate = new Date();
-        passenger.setId(SnowflakeUtil.getSnowflakeNextId());
-        passenger.setMemberId(LoginMemberContext.getId());
-        passenger.setCreateTime(currentDate);
-        passenger.setUpdateTime(currentDate);
-        passengerMapper.insert(passenger);
+        if (passenger.getId() == null) {
+            // 新增乘车人
+            passenger.setId(SnowflakeUtil.getSnowflakeNextId());
+            passenger.setMemberId(LoginMemberContext.getId());
+            passenger.setCreateTime(currentDate);
+            passenger.setUpdateTime(currentDate);
+            passengerMapper.insert(passenger);
+        } else {
+            // 修改乘车人
+            passenger.setUpdateTime(currentDate);
+            passengerMapper.updateByPrimaryKey(passenger);
+        }
     }
 
     /**

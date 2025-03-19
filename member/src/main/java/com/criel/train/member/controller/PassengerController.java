@@ -21,7 +21,8 @@ public class PassengerController {
     PassengerService passengerService;
 
     /**
-     * 新增乘车人
+     * 新增/修改乘车人
+     * 如果passengerSaveReq参数中有id，则为修改，没有则为新增
      * @param passengerSaveReq
      */
     @PostMapping("/save")
