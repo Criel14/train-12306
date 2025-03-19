@@ -80,4 +80,12 @@ public class PassengerService {
         resp.setList(BeanUtil.copyToList(passengerList, PassengerQueryResp.class));
         return resp;
     }
+
+    /**
+     * 删除乘车人
+     * @param id
+     */
+    public void deleteById(Long id) {
+        passengerMapper.deleteByPrimaryKey(id);
+    }
 }
