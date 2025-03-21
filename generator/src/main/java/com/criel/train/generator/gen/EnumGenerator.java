@@ -32,8 +32,8 @@ public class EnumGenerator {
 //            toJson(SeatColEnum.class, bufferObject, bufferArray);
 //            toJson(ConfirmOrderStatusEnum.class, bufferObject, bufferArray);
 
-            StringBuffer buffer = bufferObject.append("\r\n").append(bufferArray);
-            writeJs(buffer);
+//            StringBuffer buffer = bufferObject.append("\r\n").append(bufferArray);
+//            writeJs(buffer);
         } catch (Exception e) {
             e.printStackTrace();
         }

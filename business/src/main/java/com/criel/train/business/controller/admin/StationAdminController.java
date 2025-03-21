@@ -18,21 +18,21 @@ public class StationAdminController {
     private StationService stationService;
 
     @PostMapping("/save")
-    public CommonResp<Object> save(@Valid @RequestBody StationSaveReq req) {
+    public CommonResp save(@Valid @RequestBody StationSaveReq req) {
         stationService.save(req);
-        return new CommonResp<>();
+        return CommonResp.success();
     }
 
     @GetMapping("/query-list")
     public CommonResp<PageResp<StationQueryResp>> queryList(@Valid StationQueryReq req) {
         PageResp<StationQueryResp> list = stationService.queryList(req);
-        return new CommonResp<>(list);
+        return CommonResp.success(list);
     }
 
     @DeleteMapping("/delete/{id}")
-    public CommonResp<Object> delete(@PathVariable Long id) {
+    public CommonResp delete(@PathVariable Long id) {
         stationService.delete(id);
-        return new CommonResp<>();
+        return CommonResp.success();
     }
 
 }
