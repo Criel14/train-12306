@@ -6,7 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
-import com.criel.train.common.util.SnowUtil;
+import com.criel.train.common.util.SnowflakeUtil;
 import com.criel.train.${module}.domain.${Domain};
 import com.criel.train.${module}.domain.${Domain}Example;
 import com.criel.train.${module}.mapper.${Domain}Mapper;
@@ -32,7 +32,7 @@ public class ${Domain}Service {
         DateTime now = DateTime.now();
         ${Domain} ${domain} = BeanUtil.copyProperties(req, ${Domain}.class);
         if (ObjectUtil.isNull(${domain}.getId())) {
-            ${domain}.setId(SnowUtil.getSnowflakeNextId());
+            ${domain}.setId(SnowflakeUtil.getSnowflakeNextId());
             ${domain}.setCreateTime(now);
             ${domain}.setUpdateTime(now);
             ${domain}Mapper.insert(${domain});

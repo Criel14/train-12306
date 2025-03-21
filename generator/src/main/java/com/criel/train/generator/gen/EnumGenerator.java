@@ -6,7 +6,7 @@ import cn.hutool.core.util.StrUtil;
 //import com.jiawa.train.business.enums.SeatColEnum;
 //import com.jiawa.train.business.enums.SeatTypeEnum;
 //import com.jiawa.train.business.enums.TrainTypeEnum;
-import com.criel.train.member.enumeration.PassengerTypeEnum;
+//import com.criel.train.member.enumeration.PassengerTypeEnum;
 
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -26,7 +26,7 @@ public class EnumGenerator {
         StringBuffer bufferArray = new StringBuffer();
         long begin = System.currentTimeMillis();
         try {
-            toJson(PassengerTypeEnum.class, bufferObject, bufferArray);
+//            toJson(PassengerTypeEnum.class, bufferObject, bufferArray);
 //            toJson(TrainTypeEnum.class, bufferObject, bufferArray);
 //            toJson(SeatTypeEnum.class, bufferObject, bufferArray);
 //            toJson(SeatColEnum.class, bufferObject, bufferArray);
