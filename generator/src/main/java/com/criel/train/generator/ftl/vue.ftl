@@ -130,7 +130,7 @@ const onAdd = () => {
 };
 
 const onEdit = (record) => {
-  ${domain}.value = window.Tool.copy(record);
+  ${domain}.value = JSON.parse(JSON.stringify(record));
   visible.value = true;
 };
 
