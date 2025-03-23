@@ -42,10 +42,19 @@
   <#--  <#if !readOnly>-->
     <a-modal v-model:visible="visible" title="${tableNameCn}" @ok="handleOk"
              ok-text="确认" cancel-text="取消">
-      <a-form :model="${domain}" :label-col="{span: 4}" :wrapper-col="{ span: 20 }">
+      <a-form
+              ref="formRef"
+              :model="${domain}"
+              name="basic"
+              autocomplete="off"
+              labelAlign="left"
+              :label-col="{ span: 8 }"
+              :wrapper-col="{ span: 16 }"
+              style="margin-top: 24px"
+      >
         <#list fieldList as field>
           <#if field.name!="id" && field.nameHump!="createTime" && field.nameHump!="updateTime">
-        <a-form-item label="${field.nameCn}">
+        <a-form-item label="${field.nameCn}" :rules="[{ required: true, message: '${field.nameCn}不能为空' }]">
           <#if field.enums>
           <a-select v-model:value="${domain}.${field.nameHump}">
             <a-select-option v-for="item in ${field.enumsConst}_ARRAY" :key="item.code" :value="item.code">
