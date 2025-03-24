@@ -48,7 +48,7 @@ public class TrainCarriageService {
         TrainCarriageExample.Criteria criteria = trainCarriageExample.createCriteria();
 
         // 根据车次编号查询
-        if (ObjectUtil.isNotNull(req.getTrainCode())) {
+        if (ObjectUtil.isNotEmpty(req.getTrainCode())) {
             criteria.andTrainCodeEqualTo(req.getTrainCode());
         }
 
