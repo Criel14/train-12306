@@ -37,8 +37,13 @@ public class TrainStationService {
         DateTime now = DateTime.now();
         TrainStation trainStation = BeanUtil.copyProperties(req, TrainStation.class);
         // 自动计算停站时长
-        Date stopTime = new Date(req.getOutTime().getTime() - req.getInTime().getTime());
+        long diffMillis = req.getOutTime().getTime() - req.getInTime().getTime();
+        if (diffMillis < 0) {
+            throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_STATION_IN_TIME_OUT_TIME_ERROR);
+        }
+        Date stopTime = new Date(diffMillis);
         trainStation.setStopTime(stopTime);
+
         if (ObjectUtil.isNull(trainStation.getId())) {
             // 检查唯一键：车次编号 + 站序
             if (selectByUnique(req.getTrainCode(), req.getIndex()) != null) {
