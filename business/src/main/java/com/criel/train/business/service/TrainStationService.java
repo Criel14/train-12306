@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -35,6 +36,9 @@ public class TrainStationService {
     public void save(TrainStationSaveReq req) {
         DateTime now = DateTime.now();
         TrainStation trainStation = BeanUtil.copyProperties(req, TrainStation.class);
+        // 自动计算停站时长
+        Date stopTime = new Date(req.getOutTime().getTime() - req.getInTime().getTime());
+        trainStation.setStopTime(stopTime);
         if (ObjectUtil.isNull(trainStation.getId())) {
             // 检查唯一键：车次编号 + 站序
             if (selectByUnique(req.getTrainCode(), req.getIndex()) != null) {
@@ -44,7 +48,6 @@ public class TrainStationService {
             if (selectByUnique(req.getTrainCode(), req.getName()) != null) {
                 throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_STATION_NAME_UNIQUE_ERROR);
             }
-
             trainStation.setId(SnowflakeUtil.getSnowflakeNextId());
             trainStation.setCreateTime(now);
             trainStation.setUpdateTime(now);

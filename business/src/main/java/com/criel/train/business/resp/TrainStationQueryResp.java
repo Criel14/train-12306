@@ -48,7 +48,7 @@ public class TrainStationQueryResp {
     /**
      * 停站时长
      */
-    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "HH:mm:ss")
     private Date stopTime;
     /**
      * 里程（公里）|从上一站到本站的距离
