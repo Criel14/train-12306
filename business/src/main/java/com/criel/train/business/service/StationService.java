@@ -3,12 +3,13 @@ package com.criel.train.business.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.business.domain.generated.*;
+import com.criel.train.common.exception.BusinessException;
+import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
 import com.criel.train.common.util.SnowflakeUtil;
-import com.criel.train.business.domain.generated.Station;
-import com.criel.train.business.domain.generated.StationExample;
 import com.criel.train.business.mapper.StationMapper;
 import com.criel.train.business.req.StationQueryReq;
 import com.criel.train.business.req.StationSaveReq;
@@ -32,6 +33,15 @@ public class StationService {
         DateTime now = DateTime.now();
         Station station = BeanUtil.copyProperties(req, Station.class);
         if (ObjectUtil.isNull(station.getId())) {
+            // 检查站名是否已经存在
+            StationExample stationExample = new StationExample();
+            StationExample.Criteria criteria = stationExample.createCriteria();
+            criteria.andNameEqualTo(req.getName());
+            List<Station> stationList = stationMapper.selectByExample(stationExample);
+            if (!stationList.isEmpty()) {
+                throw new BusinessException(BusinessExceptionEnum.BUSINESS_STATION_IS_EXIST);
+            }
+
             station.setId(SnowflakeUtil.getSnowflakeNextId());
             station.setCreateTime(now);
             station.setUpdateTime(now);
