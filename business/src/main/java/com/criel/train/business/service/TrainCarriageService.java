@@ -3,7 +3,10 @@ package com.criel.train.business.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.business.domain.generated.Station;
 import com.criel.train.business.enumeration.SeatColEnum;
+import com.criel.train.common.exception.BusinessException;
+import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
@@ -39,6 +42,11 @@ public class TrainCarriageService {
         trainCarriage.setSeatCount(trainCarriage.getRowCount() * seatColEnums.size());
 
         if (ObjectUtil.isNull(trainCarriage.getId())) {
+            // 检查唯一键：车次编号 + 车厢序号
+            if (selectByUnique(req.getTrainCode(), req.getIndex()) != null) {
+                throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_CARRIAGE_INDEX_UNIQUE_ERROR);
+            }
+
             trainCarriage.setId(SnowflakeUtil.getSnowflakeNextId());
             trainCarriage.setCreateTime(now);
             trainCarriage.setUpdateTime(now);
@@ -91,5 +99,23 @@ public class TrainCarriageService {
         TrainCarriageExample.Criteria criteria = trainCarriageExample.createCriteria();
         criteria.andTrainCodeEqualTo(trainCode);
         return trainCarriageMapper.selectByExample(trainCarriageExample);
+    }
+
+    /**
+     * 根据唯一键查询
+     * @param trainCode
+     * @param index
+     * @return
+     */
+    private TrainCarriage selectByUnique(String trainCode, Integer index) {
+        TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
+        TrainCarriageExample.Criteria criteria = trainCarriageExample.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode).andIndexEqualTo(index);
+        List<TrainCarriage> trainCarriageList = trainCarriageMapper.selectByExample(trainCarriageExample);
+        if (!trainCarriageList.isEmpty()) {
+            return trainCarriageList.get(0);
+        } else {
+            return null;
+        }
     }
 }

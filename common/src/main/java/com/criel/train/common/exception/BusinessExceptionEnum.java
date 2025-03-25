@@ -15,7 +15,11 @@ public enum BusinessExceptionEnum {
     CODE_IS_EMPTY("验证码为空"),
     CODE_IS_EXPIRED("验证码未获取或已过期，请重新获取"),
     GET_CODE_FIRST("请先获取验证码"),
-    BUSINESS_STATION_IS_EXIST("车站已存在");
+    BUSINESS_STATION_NAME_UNIQUE_ERROR("车站已存在"),
+    BUSINESS_TRAIN_CODE_UNIQUE_ERROR("车次编号已存在"),
+    BUSINESS_TRAIN_STATION_INDEX_UNIQUE_ERROR("该车次中该站序已存在"),
+    BUSINESS_TRAIN_STATION_NAME_UNIQUE_ERROR("该车次中该站名已存在"),
+    BUSINESS_TRAIN_CARRIAGE_INDEX_UNIQUE_ERROR("该厢号已存在");
 
     private final String desc;
 

@@ -3,6 +3,8 @@ package com.criel.train.business.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.business.domain.generated.TrainCarriage;
+import com.criel.train.business.domain.generated.TrainCarriageExample;
 import com.criel.train.common.exception.BusinessException;
 import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.github.pagehelper.PageHelper;
@@ -34,6 +36,15 @@ public class TrainStationService {
         DateTime now = DateTime.now();
         TrainStation trainStation = BeanUtil.copyProperties(req, TrainStation.class);
         if (ObjectUtil.isNull(trainStation.getId())) {
+            // 检查唯一键：车次编号 + 站序
+            if (selectByUnique(req.getTrainCode(), req.getIndex()) != null) {
+                throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_STATION_INDEX_UNIQUE_ERROR);
+            }
+            // 检查唯一键：车次编号 + 站名
+            if (selectByUnique(req.getTrainCode(), req.getName()) != null) {
+                throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_STATION_NAME_UNIQUE_ERROR);
+            }
+
             trainStation.setId(SnowflakeUtil.getSnowflakeNextId());
             trainStation.setCreateTime(now);
             trainStation.setUpdateTime(now);
@@ -73,5 +84,41 @@ public class TrainStationService {
 
     public void delete(Long id) {
         trainStationMapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 根据唯一键查询
+     * @param trainCode
+     * @param index
+     * @return
+     */
+    private TrainStation selectByUnique(String trainCode, Integer index) {
+        TrainStationExample trainStationExample = new TrainStationExample();
+        TrainStationExample.Criteria criteria = trainStationExample.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode).andIndexEqualTo(index);
+        List<TrainStation> trainCarriageList = trainStationMapper.selectByExample(trainStationExample);
+        if (!trainCarriageList.isEmpty()) {
+            return trainCarriageList.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 根据唯一键查询
+     * @param trainCode
+     * @param name
+     * @return
+     */
+    private TrainStation selectByUnique(String trainCode, String name) {
+        TrainStationExample trainStationExample = new TrainStationExample();
+        TrainStationExample.Criteria criteria = trainStationExample.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode).andNameEqualTo(name);
+        List<TrainStation> trainCarriageList = trainStationMapper.selectByExample(trainStationExample);
+        if (!trainCarriageList.isEmpty()) {
+            return trainCarriageList.get(0);
+        } else {
+            return null;
+        }
     }
 }

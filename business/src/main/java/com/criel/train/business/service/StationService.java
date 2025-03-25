@@ -35,7 +35,7 @@ public class StationService {
         if (ObjectUtil.isNull(station.getId())) {
             // 检查站名是否已经存在
             if (selectByUnique(req.getName()) != null) {
-                throw new BusinessException(BusinessExceptionEnum.BUSINESS_STATION_IS_EXIST);
+                throw new BusinessException(BusinessExceptionEnum.BUSINESS_STATION_NAME_UNIQUE_ERROR);
             }
 
             station.setId(SnowflakeUtil.getSnowflakeNextId());
@@ -82,7 +82,7 @@ public class StationService {
     }
 
     /**
-     * 按照唯一键查询
+     * 根据唯一键查询
      * @param name
      * @return
      */
