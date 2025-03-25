@@ -34,11 +34,7 @@ public class StationService {
         Station station = BeanUtil.copyProperties(req, Station.class);
         if (ObjectUtil.isNull(station.getId())) {
             // 检查站名是否已经存在
-            StationExample stationExample = new StationExample();
-            StationExample.Criteria criteria = stationExample.createCriteria();
-            criteria.andNameEqualTo(req.getName());
-            List<Station> stationList = stationMapper.selectByExample(stationExample);
-            if (!stationList.isEmpty()) {
+            if (selectByUnique(req.getName()) != null) {
                 throw new BusinessException(BusinessExceptionEnum.BUSINESS_STATION_IS_EXIST);
             }
 
@@ -83,5 +79,22 @@ public class StationService {
         stationExample.setOrderByClause("name_pinyin asc");
         List<Station> stationList = stationMapper.selectByExample(stationExample);
         return BeanUtil.copyToList(stationList, StationQueryResp.class);
+    }
+
+    /**
+     * 按照唯一键查询
+     * @param name
+     * @return
+     */
+    private Station selectByUnique(String name) {
+        StationExample stationExample = new StationExample();
+        StationExample.Criteria criteria = stationExample.createCriteria();
+        criteria.andNameEqualTo(name);
+        List<Station> stationList = stationMapper.selectByExample(stationExample);
+        if (!stationList.isEmpty()) {
+            return stationList.get(0);
+        } else {
+            return null;
+        }
     }
 }
