@@ -3,6 +3,7 @@ package com.criel.train.business.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.business.enumeration.SeatColEnum;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
@@ -31,6 +32,12 @@ public class TrainCarriageService {
     public void save(TrainCarriageSaveReq req) {
         DateTime now = DateTime.now();
         TrainCarriage trainCarriage = BeanUtil.copyProperties(req, TrainCarriage.class);
+
+        // 由座位类型得到列数，进而得总座位数
+        List<SeatColEnum> seatColEnums = SeatColEnum.getColsByType(trainCarriage.getSeatType());
+        trainCarriage.setColCount(seatColEnums.size());
+        trainCarriage.setSeatCount(trainCarriage.getRowCount() * seatColEnums.size());
+
         if (ObjectUtil.isNull(trainCarriage.getId())) {
             trainCarriage.setId(SnowflakeUtil.getSnowflakeNextId());
             trainCarriage.setCreateTime(now);
