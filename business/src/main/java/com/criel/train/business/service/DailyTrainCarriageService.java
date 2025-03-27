@@ -58,7 +58,7 @@ public class DailyTrainCarriageService {
         if (ObjectUtil.isNotNull(req.getDate())) {
             criteria.andDateEqualTo(req.getDate());
         }
-        // 根据code查询
+        // 根据trainCode查询
         if (ObjectUtil.isNotEmpty(req.getTrainCode())) {
             criteria.andTrainCodeEqualTo(req.getTrainCode());
         }
