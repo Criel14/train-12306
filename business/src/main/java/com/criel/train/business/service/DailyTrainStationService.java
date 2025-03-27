@@ -3,6 +3,8 @@ package com.criel.train.business.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.common.exception.BusinessException;
+import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
@@ -18,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -31,6 +34,15 @@ public class DailyTrainStationService {
     public void save(DailyTrainStationSaveReq req) {
         DateTime now = DateTime.now();
         DailyTrainStation dailyTrainStation = BeanUtil.copyProperties(req, DailyTrainStation.class);
+
+        // 自动计算停站时长
+        long diffMillis = req.getOutTime().getTime() - req.getInTime().getTime();
+        if (diffMillis < 0) {
+            throw new BusinessException(BusinessExceptionEnum.BUSINESS_TRAIN_STATION_IN_TIME_OUT_TIME_ERROR);
+        }
+        Date stopTime = new Date(diffMillis);
+        dailyTrainStation.setStopTime(stopTime);
+
         if (ObjectUtil.isNull(dailyTrainStation.getId())) {
             dailyTrainStation.setId(SnowflakeUtil.getSnowflakeNextId());
             dailyTrainStation.setCreateTime(now);
