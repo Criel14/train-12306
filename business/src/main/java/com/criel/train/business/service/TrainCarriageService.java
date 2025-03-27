@@ -37,6 +37,7 @@ public class TrainCarriageService {
         TrainCarriage trainCarriage = BeanUtil.copyProperties(req, TrainCarriage.class);
 
         // 由座位类型得到列数，进而得总座位数
+        // TODO 硬卧和软卧暂时有bug
         List<SeatColEnum> seatColEnums = SeatColEnum.getColsByType(trainCarriage.getSeatType());
         trainCarriage.setColCount(seatColEnums.size());
         trainCarriage.setSeatCount(trainCarriage.getRowCount() * seatColEnums.size());
