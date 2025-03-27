@@ -10,6 +10,6 @@ public class TestJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        System.out.println("TestJob TEST开始");
+        System.out.println("TestJob TEST开始" + System.currentTimeMillis());
     }
 }

@@ -159,7 +159,7 @@ public class JobController {
     }
 
     @RequestMapping(value = "/query")
-    public CommonResp query() {
+    public CommonResp<List<CronJobResp>> query() {
         LOG.info("查看所有定时任务开始");
         List<CronJobResp> cronJobDtoList = new ArrayList();
         try {
