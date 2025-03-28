@@ -39,7 +39,7 @@ public class DailyTrainAdminController {
     }
 
     /**
-     * 生成每日所有车次数据
+     * 生成对应日期所有车次数据
      * @param date 生成的日期
      * @return
      */

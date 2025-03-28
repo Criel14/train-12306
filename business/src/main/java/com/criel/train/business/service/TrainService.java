@@ -74,6 +74,7 @@ public class TrainService {
     }
 
     public void delete(Long id) {
+        // TODO 还需要把该车次关联的TrainStation,TrainCarriage,TrainSeat都删除
         trainMapper.deleteByPrimaryKey(id);
     }
 
