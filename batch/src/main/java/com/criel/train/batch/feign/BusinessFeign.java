@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Date;
 
-//@FeignClient("business")
+// @FeignClient("business") // 等完成了注册中心再用这个
 @FeignClient(name = "business", url = "http://localhost:8002/business")
 public interface BusinessFeign {
     @GetMapping("/test-connect")

@@ -28,11 +28,13 @@ public class DailyTrainJob implements Job {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         // 增加线程的日志流水号
         MDC.put("LOG_ID", System.currentTimeMillis() + RandomUtil.randomString(3));
-        LOG.info("生成后15日车次开始...");
+        LOG.info("生成后15日车次信息开始...");
+
         // 获取15天后的日期
         int offset15DaysMillis = 15 * 24 * 60 * 60 * 1000;
         Date offsetDate = new Date(System.currentTimeMillis() + offset15DaysMillis);
-        CommonResp commonResp = businessFeign.genDaily(offsetDate);
-        LOG.info("生成后15日车次结束...");
+        businessFeign.genDaily(offsetDate);
+
+        LOG.info("生成后15日车次信息结束...");
     }
 }

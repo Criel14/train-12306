@@ -2,6 +2,7 @@ package com.criel.train.business.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.criel.train.business.domain.generated.Train;
 import com.github.pagehelper.PageHelper;
@@ -33,6 +34,9 @@ public class DailyTrainService {
 
     @Autowired
     private TrainService trainService;
+
+    @Autowired
+    private DailyTrainStationService dailyTrainStationService;
 
     public void save(DailyTrainSaveReq req) {
         DateTime now = DateTime.now();
@@ -99,17 +103,19 @@ public class DailyTrainService {
     }
 
     /**
-     * 生成每日所传入车次的信息
+     * 生成每日所传入车次的信息：车次、车站、车厢、座位
      * @param train
      * @param date
      */
     private void genDailyTrain(Train train, Date date) {
+        LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), train.getCode());
+
         // 删除原有
         DailyTrainExample dailyTrainExample = new DailyTrainExample();
         dailyTrainExample.createCriteria().andCodeEqualTo(train.getCode()).andDateEqualTo(date);
         dailyTrainMapper.deleteByExample(dailyTrainExample);
 
-        // 生成
+        // 生成车次信息
         Date now = new Date();
         DailyTrain dailyTrain = BeanUtil.copyProperties(train, DailyTrain.class);
         dailyTrain.setId(SnowflakeUtil.getSnowflakeNextId());
@@ -117,5 +123,10 @@ public class DailyTrainService {
         dailyTrain.setUpdateTime(now);
         dailyTrain.setDate(date);
         dailyTrainMapper.insert(dailyTrain);
+
+        // 生成其他信息
+        dailyTrainStationService.genDaily(date, train.getCode());
+
+        LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), train.getCode());
     }
 }
