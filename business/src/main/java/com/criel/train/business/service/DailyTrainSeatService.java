@@ -2,13 +2,14 @@ package com.criel.train.business.service;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.criel.train.business.domain.generated.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
 import com.criel.train.common.util.SnowflakeUtil;
-import com.criel.train.business.domain.generated.DailyTrainSeat;
-import com.criel.train.business.domain.generated.DailyTrainSeatExample;
 import com.criel.train.business.mapper.DailyTrainSeatMapper;
 import com.criel.train.business.req.DailyTrainSeatQueryReq;
 import com.criel.train.business.req.DailyTrainSeatSaveReq;
@@ -16,8 +17,10 @@ import com.criel.train.business.resp.DailyTrainSeatQueryResp;
 import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -25,8 +28,14 @@ public class DailyTrainSeatService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DailyTrainSeatService.class);
 
-    @Resource
+    @Autowired
     private DailyTrainSeatMapper dailyTrainSeatMapper;
+
+    @Autowired
+    private TrainSeatService trainSeatService;
+
+    @Autowired
+    private TrainStationService trainStationService;
 
     public void save(DailyTrainSeatSaveReq req) {
         DateTime now = DateTime.now();
@@ -71,5 +80,53 @@ public class DailyTrainSeatService {
 
     public void delete(Long id) {
         dailyTrainSeatMapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 生成对应日期、对应车次的座位数据
+     *
+     * @param date
+     * @param trainCode
+     */
+    public void genDaily(Date date, String trainCode) {
+        // 删除原有数据
+        DailyTrainSeatExample dailyTrainSeatExample = new DailyTrainSeatExample();
+        dailyTrainSeatExample.createCriteria().andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
+        dailyTrainSeatMapper.deleteByExample(dailyTrainSeatExample);
+
+        // 生成
+        List<TrainSeat> trainSeatList = trainSeatService.selectByTrainCode(trainCode);
+        if (trainSeatList == null || trainSeatList.isEmpty()) {
+            LOG.info("{}车次没有座位信息，无法生成每日座位数据", trainCode);
+            return;
+        }
+
+        List<TrainStation> trainStationList = trainStationService.selectByTrainCode(trainCode);
+        String defaultSell = StrUtil.fillBefore("", '0', trainStationList.size() - 1);
+
+        for (TrainSeat trainSeat : trainSeatList) {
+            genDailyTrainSeat(date, trainSeat, defaultSell);
+        }
+    }
+
+    /**
+     * 生成单日单个车次车厢信息
+     *
+     * @param date
+     * @param trainSeat
+     */
+    private void genDailyTrainSeat(Date date, TrainSeat trainSeat, String defaultSell) {
+        LOG.info("开始生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainSeat.getTrainCode());
+
+        Date now = new Date();
+        DailyTrainSeat dailyTrainSeat = BeanUtil.copyProperties(trainSeat, DailyTrainSeat.class);
+        dailyTrainSeat.setId(SnowflakeUtil.getSnowflakeNextId());
+        dailyTrainSeat.setCreateTime(now);
+        dailyTrainSeat.setUpdateTime(now);
+        dailyTrainSeat.setDate(date);
+        dailyTrainSeat.setSell(defaultSell);
+        dailyTrainSeatMapper.insert(dailyTrainSeat);
+
+        LOG.info("结束生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainSeat.getTrainCode());
     }
 }

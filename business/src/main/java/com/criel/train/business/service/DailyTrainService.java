@@ -38,6 +38,12 @@ public class DailyTrainService {
     @Autowired
     private DailyTrainStationService dailyTrainStationService;
 
+    @Autowired
+    private DailyTrainCarriageService dailyTrainCarriageService;
+
+    @Autowired
+    private DailyTrainSeatService dailyTrainSeatService;
+
     public void save(DailyTrainSaveReq req) {
         DateTime now = DateTime.now();
         DailyTrain dailyTrain = BeanUtil.copyProperties(req, DailyTrain.class);
@@ -126,6 +132,8 @@ public class DailyTrainService {
 
         // 生成其他信息
         dailyTrainStationService.genDaily(date, train.getCode());
+        dailyTrainCarriageService.genDaily(date, train.getCode());
+        dailyTrainSeatService.genDaily(date, train.getCode());
 
         LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), train.getCode());
     }

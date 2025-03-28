@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.criel.train.business.domain.generated.TrainCarriage;
+import com.criel.train.business.domain.generated.TrainCarriageExample;
 import com.criel.train.business.enumeration.SeatColEnum;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -123,5 +124,18 @@ public class TrainSeatService {
                 }
             }
         });
+    }
+
+    /**
+     * 根据车次编号查询座位信息
+     * @param trainCode
+     * @return
+     */
+    public List<TrainSeat> selectByTrainCode(String trainCode) {
+        TrainSeatExample trainSeatExample = new TrainSeatExample();
+        trainSeatExample.setOrderByClause("id asc");
+        TrainSeatExample.Criteria criteria = trainSeatExample.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode);
+        return trainSeatMapper.selectByExample(trainSeatExample);
     }
 }

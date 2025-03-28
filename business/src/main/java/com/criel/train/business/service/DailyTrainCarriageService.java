@@ -108,7 +108,7 @@ public class DailyTrainCarriageService {
             return;
         }
         for (TrainCarriage trainCarriage : trainCarriageList) {
-            genDailyTrainStation(date, trainCarriage);
+            genDailyTrainCarriage(date, trainCarriage);
         }
     }
 
@@ -118,7 +118,7 @@ public class DailyTrainCarriageService {
      * @param date
      * @param trainCarriage
      */
-    private void genDailyTrainStation(Date date, TrainCarriage trainCarriage) {
+    private void genDailyTrainCarriage(Date date, TrainCarriage trainCarriage) {
         LOG.info("开始生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainCarriage.getTrainCode());
 
         Date now = new Date();
