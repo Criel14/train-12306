@@ -3,7 +3,7 @@ Accept: application/json
 
 ###
 
-GET http://localhost:8003/batch/batch/test
+GET http://localhost:8003/batch/test-connect
 Accept: application/json
 
 ###
