@@ -63,6 +63,21 @@ public class DailyTrainTicketService {
         dailyTrainTicketExample.setOrderByClause("id desc");
         DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();
 
+        LOG.info("DailyTrainTicketQueryReq: {}", req.toString());
+
+        if (req.getDate() != null) {
+            criteria.andDateEqualTo(req.getDate());
+        }
+        if (req.getTrainCode() != null && !req.getTrainCode().isEmpty()) {
+            criteria.andTrainCodeEqualTo(req.getTrainCode());
+        }
+        if (req.getStart() != null && !req.getStart().isEmpty()) {
+            criteria.andStartEqualTo(req.getStart());
+        }
+        if (req.getEnd() != null && !req.getEnd().isEmpty()) {
+            criteria.andEndEqualTo(req.getEnd());
+        }
+
         LOG.info("查询页码：{}", req.getPage());
         LOG.info("每页条数：{}", req.getSize());
         PageHelper.startPage(req.getPage(), req.getSize());
