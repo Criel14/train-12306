@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -100,6 +101,7 @@ public class DailyTrainStationService {
      * @param date
      * @param trainCode
      */
+    @Transactional
     public void genDaily(Date date, String trainCode) {
         // 删除原有数据
         DailyTrainStationExample dailyTrainStationExample = new DailyTrainStationExample();
@@ -107,6 +109,8 @@ public class DailyTrainStationService {
         dailyTrainStationMapper.deleteByExample(dailyTrainStationExample);
 
         // 生成
+        LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), trainCode);
+
         List<TrainStation> trainStationList = trainStationService.selectByTrainCode(trainCode);
         if (trainStationList == null || trainStationList.isEmpty()) {
             LOG.info("{}车次没有车站信息，无法生成每日车站数据", trainCode);
@@ -115,6 +119,8 @@ public class DailyTrainStationService {
         for (TrainStation trainStation : trainStationList) {
             genDailyTrainStation(date, trainStation);
         }
+
+        LOG.info("结束生成{}的{}车次的车站信息", DateUtil.formatDate(date), trainCode);
     }
 
     /**
@@ -124,8 +130,6 @@ public class DailyTrainStationService {
      * @param trainStation
      */
     private void genDailyTrainStation(Date date, TrainStation trainStation) {
-        LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), trainStation.getTrainCode());
-
         Date now = new Date();
         DailyTrainStation dailyTrainStation = BeanUtil.copyProperties(trainStation, DailyTrainStation.class);
         dailyTrainStation.setId(SnowflakeUtil.getSnowflakeNextId());
@@ -133,7 +137,5 @@ public class DailyTrainStationService {
         dailyTrainStation.setUpdateTime(now);
         dailyTrainStation.setDate(date);
         dailyTrainStationMapper.insert(dailyTrainStation);
-
-        LOG.info("结束生成{}的{}车次的车站信息", DateUtil.formatDate(date), trainStation.getTrainCode());
     }
 }

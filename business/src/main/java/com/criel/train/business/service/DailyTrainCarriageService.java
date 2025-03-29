@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -95,6 +96,7 @@ public class DailyTrainCarriageService {
      * @param date
      * @param trainCode
      */
+    @Transactional
     public void genDaily(Date date, String trainCode) {
         // 删除原有数据
         DailyTrainCarriageExample dailyTrainCarriageExample = new DailyTrainCarriageExample();
@@ -102,6 +104,8 @@ public class DailyTrainCarriageService {
         dailyTrainCarriageMapper.deleteByExample(dailyTrainCarriageExample);
 
         // 生成
+        LOG.info("开始生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainCode);
+
         List<TrainCarriage> trainCarriageList = trainCarriageService.selectByTrainCode(trainCode);
         if (trainCarriageList == null || trainCarriageList.isEmpty()) {
             LOG.info("{}车次没有车站信息，无法生成每日车厢数据", trainCode);
@@ -110,6 +114,8 @@ public class DailyTrainCarriageService {
         for (TrainCarriage trainCarriage : trainCarriageList) {
             genDailyTrainCarriage(date, trainCarriage);
         }
+
+        LOG.info("结束生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainCode);
     }
 
     /**
@@ -119,8 +125,6 @@ public class DailyTrainCarriageService {
      * @param trainCarriage
      */
     private void genDailyTrainCarriage(Date date, TrainCarriage trainCarriage) {
-        LOG.info("开始生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainCarriage.getTrainCode());
-
         Date now = new Date();
         DailyTrainCarriage dailyTrainCarriage = BeanUtil.copyProperties(trainCarriage, DailyTrainCarriage.class);
         dailyTrainCarriage.setId(SnowflakeUtil.getSnowflakeNextId());
@@ -128,7 +132,5 @@ public class DailyTrainCarriageService {
         dailyTrainCarriage.setUpdateTime(now);
         dailyTrainCarriage.setDate(date);
         dailyTrainCarriageMapper.insert(dailyTrainCarriage);
-
-        LOG.info("结束生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainCarriage.getTrainCode());
     }
 }

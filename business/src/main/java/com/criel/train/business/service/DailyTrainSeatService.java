@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -88,6 +89,7 @@ public class DailyTrainSeatService {
      * @param date
      * @param trainCode
      */
+    @Transactional
     public void genDaily(Date date, String trainCode) {
         // 删除原有数据
         DailyTrainSeatExample dailyTrainSeatExample = new DailyTrainSeatExample();
@@ -95,6 +97,8 @@ public class DailyTrainSeatService {
         dailyTrainSeatMapper.deleteByExample(dailyTrainSeatExample);
 
         // 生成
+        LOG.info("开始生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainCode);
+
         List<TrainSeat> trainSeatList = trainSeatService.selectByTrainCode(trainCode);
         if (trainSeatList == null || trainSeatList.isEmpty()) {
             LOG.info("{}车次没有座位信息，无法生成每日座位数据", trainCode);
@@ -107,6 +111,8 @@ public class DailyTrainSeatService {
         for (TrainSeat trainSeat : trainSeatList) {
             genDailyTrainSeat(date, trainSeat, defaultSell);
         }
+
+        LOG.info("结束生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainCode);
     }
 
     /**
@@ -116,8 +122,6 @@ public class DailyTrainSeatService {
      * @param trainSeat
      */
     private void genDailyTrainSeat(Date date, TrainSeat trainSeat, String defaultSell) {
-        LOG.info("开始生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainSeat.getTrainCode());
-
         Date now = new Date();
         DailyTrainSeat dailyTrainSeat = BeanUtil.copyProperties(trainSeat, DailyTrainSeat.class);
         dailyTrainSeat.setId(SnowflakeUtil.getSnowflakeNextId());
@@ -126,7 +130,5 @@ public class DailyTrainSeatService {
         dailyTrainSeat.setDate(date);
         dailyTrainSeat.setSell(defaultSell);
         dailyTrainSeatMapper.insert(dailyTrainSeat);
-
-        LOG.info("结束生成{}的{}车次的车厢信息", DateUtil.formatDate(date), trainSeat.getTrainCode());
     }
 }
