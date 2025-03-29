@@ -4,7 +4,10 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.business.domain.generated.DailyTrain;
 import com.criel.train.business.domain.generated.TrainStation;
+import com.criel.train.business.enumeration.SeatTypeEnum;
+import com.criel.train.business.enumeration.TrainTypeEnum;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +40,9 @@ public class DailyTrainTicketService {
 
     @Autowired
     private TrainStationService trainStationService;
+
+    @Autowired
+    private DailyTrainSeatService dailyTrainSeatService;
 
     public void save(DailyTrainTicketSaveReq req) {
         DateTime now = DateTime.now();
@@ -81,10 +88,13 @@ public class DailyTrainTicketService {
      * 生成对应日期、对应车次的余票数据
      *
      * @param date
-     * @param trainCode
+     * @param dailyTrain
      */
     @Transactional
-    public void genDaily(Date date, String trainCode) {
+    public void genDaily(Date date, DailyTrain dailyTrain) {
+        String trainCode = dailyTrain.getCode();
+        String trainType = dailyTrain.getType();
+
         // 删除原有数据
         DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
         dailyTrainTicketExample.createCriteria().andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
@@ -100,8 +110,20 @@ public class DailyTrainTicketService {
             LOG.info("{}车次没有车站信息，无法生成每日余票数据", trainCode);
             return;
         }
+
+        // 获取该车次该日期，各座位类型的总数
+        int ydzCount = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.YDZ.getCode());
+        int edzCount = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.EDZ.getCode());
+        int rwCount = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.RW.getCode());
+        int ywCount = dailyTrainSeatService.countSeat(date, trainCode, SeatTypeEnum.YW.getCode());
+
+        // 车次类型票价系数
+        BigDecimal trainTypePriceRate = TrainTypeEnum.getPriceFactor(trainType);
+
         for (int start = 0; start < trainStationList.size(); start++) {
             TrainStation startStation = trainStationList.get(start);
+            // start到end车站区间距离
+            BigDecimal distance = BigDecimal.ZERO;
             for (int end = start + 1; end < trainStationList.size(); end++) {
                 TrainStation endStation = trainStationList.get(end);
                 DailyTrainTicket dailyTrainTicket = new DailyTrainTicket();
@@ -116,18 +138,36 @@ public class DailyTrainTicketService {
                 dailyTrainTicket.setEndPinyin(endStation.getNamePinyin());
                 dailyTrainTicket.setEndTime(endStation.getInTime());
                 dailyTrainTicket.setEndIndex(endStation.getIndex());
-
-                // TODO 需要修改
-                dailyTrainTicket.setYdz(0);
-                dailyTrainTicket.setYdzPrice(BigDecimal.ZERO);
-                dailyTrainTicket.setEdz(0);
-                dailyTrainTicket.setEdzPrice(BigDecimal.ZERO);
-                dailyTrainTicket.setRw(0);
-                dailyTrainTicket.setRwPrice(BigDecimal.ZERO);
-                dailyTrainTicket.setYw(0);
-                dailyTrainTicket.setYwPrice(BigDecimal.ZERO);
                 dailyTrainTicket.setCreateTime(now);
                 dailyTrainTicket.setUpdateTime(now);
+                dailyTrainTicket.setYdz(ydzCount);
+                dailyTrainTicket.setEdz(edzCount);
+                dailyTrainTicket.setRw(rwCount);
+                dailyTrainTicket.setYw(ywCount);
+
+                // 票价 = 车站区间距离 * 座位类型价格 * 车辆类型价格系数 （简化，无阶梯计价）
+                distance = distance.add(endStation.getKm()); // getKm()是上一站到本站的距离
+                BigDecimal ydzPrice = distance.multiply(SeatTypeEnum.YDZ.getPrice()).multiply(trainTypePriceRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal edzPrice = distance.multiply(SeatTypeEnum.EDZ.getPrice()).multiply(trainTypePriceRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal rwPrice = distance.multiply(SeatTypeEnum.RW.getPrice()).multiply(trainTypePriceRate).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal ywPrice = distance.multiply(SeatTypeEnum.YW.getPrice()).multiply(trainTypePriceRate).setScale(2, RoundingMode.HALF_UP);
+                // 除去没有的座位类型
+                if (ydzCount == -1) {
+                    ydzPrice = BigDecimal.ZERO;
+                }
+                if (edzCount == -1) {
+                    edzPrice = BigDecimal.ZERO;
+                }
+                if (rwCount == -1) {
+                    rwPrice = BigDecimal.ZERO;
+                }
+                if (ywCount == -1) {
+                    ywPrice = BigDecimal.ZERO;
+                }
+                dailyTrainTicket.setYdzPrice(ydzPrice);
+                dailyTrainTicket.setEdzPrice(edzPrice);
+                dailyTrainTicket.setRwPrice(rwPrice);
+                dailyTrainTicket.setYwPrice(ywPrice);
 
                 dailyTrainTicketMapper.insert(dailyTrainTicket);
             }

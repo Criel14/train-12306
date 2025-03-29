@@ -70,4 +70,18 @@ public enum TrainTypeEnum {
         }
         return list;
     }
+
+    /**
+     * 根据车次类型code获取票价比例priceRate
+     * @param type
+     * @return
+     */
+    public static BigDecimal getPriceFactor(String type) {
+        for (TrainTypeEnum anEnum : EnumSet.allOf(TrainTypeEnum.class)) {
+            if (anEnum.getCode().equals(type)) {
+                return anEnum.getPriceRate();
+            }
+        }
+        return null;
+    }
 }

@@ -113,7 +113,7 @@ public class DailyTrainService {
     }
 
     /**
-     * 生成每日所传入车次的信息：车次、车站、车厢、座位
+     * 生成所传入车次的每日信息：车次、车站、车厢、座位
      * @param train
      * @param date
      */
@@ -139,7 +139,7 @@ public class DailyTrainService {
         dailyTrainStationService.genDaily(date, train.getCode());
         dailyTrainCarriageService.genDaily(date, train.getCode());
         dailyTrainSeatService.genDaily(date, train.getCode());
-        dailyTrainTicketService.genDaily(date, train.getCode());
+        dailyTrainTicketService.genDaily(date, dailyTrain);
 
         LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), train.getCode());
     }
