@@ -46,7 +46,7 @@ public class ConfirmOrderSaveReq {
     /**
      * 车票，前端传的是Json数据，自动映射
      */
-    @NotBlank(message = "【车票】不能为空")
+    @NotNull(message = "【车票】不能为空")
     private List<ConfirmOrderTicketReq> tickets;
 
 }
