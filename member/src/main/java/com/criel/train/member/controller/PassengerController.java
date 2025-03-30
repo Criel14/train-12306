@@ -55,4 +55,14 @@ public class PassengerController {
         return CommonResp.success();
     }
 
+    /**
+     * 查询当前登录用户的乘车人列表
+     * @return
+     */
+    @GetMapping("/query-mine")
+    public CommonResp<List<PassengerQueryResp>> queryMine() {
+        List<PassengerQueryResp> passengerQueryRespList = passengerService.queryMine();
+        return CommonResp.success(passengerQueryRespList);
+    }
+
 }
