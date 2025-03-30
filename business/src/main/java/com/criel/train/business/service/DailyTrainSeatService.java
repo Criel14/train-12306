@@ -137,7 +137,7 @@ public class DailyTrainSeatService {
     }
 
     /**
-     * 生成单日单个车次车厢信息
+     * 生成单日单个车次座位信息
      *
      * @param date
      * @param trainSeat
@@ -151,5 +151,19 @@ public class DailyTrainSeatService {
         dailyTrainSeat.setDate(date);
         dailyTrainSeat.setSell(defaultSell);
         dailyTrainSeatMapper.insert(dailyTrainSeat);
+    }
+
+    /**
+     * 根据车次、车厢、日期，查询该车厢所有座位，升序
+     * @param carriageIndex
+     * @param date
+     * @param trainCode
+     * @return
+     */
+    public List<DailyTrainSeat> selectByCarriageIndexAndDateAndTrainCode(int carriageIndex, Date date, String trainCode) {
+        DailyTrainSeatExample dailyTrainSeatExample = new DailyTrainSeatExample();
+        dailyTrainSeatExample.setOrderByClause("carriage_seat_index asc");
+        dailyTrainSeatExample.createCriteria().andCarriageIndexEqualTo(carriageIndex).andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
+        return dailyTrainSeatMapper.selectByExample(dailyTrainSeatExample);
     }
 }
