@@ -74,4 +74,21 @@ public class ConfirmOrderService {
     public void delete(Long id) {
         confirmOrderMapper.deleteByPrimaryKey(id);
     }
+
+    public void confirm(ConfirmOrderSaveReq req) {
+        // TODO 数据校验：车次是否存在、余票是否存在、tickets是否为空、乘车人是否已买过相同数据
+
+        // 保存confirm_order表，初始化状态
+
+        // 查询余票，计算是否足够
+
+        // 选择座位位置
+
+        // 更新daily_train_ticket每日余票表、daily_train_seat每日座位表
+
+        // 更新购票记录表 (?)
+
+        // 更新confirm_order表状态
+
+    }
 }

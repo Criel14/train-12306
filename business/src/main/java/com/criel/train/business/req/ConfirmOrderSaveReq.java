@@ -1,6 +1,8 @@
 package com.criel.train.business.req;
 
 import java.util.Date;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.NotBlank;
@@ -9,17 +11,6 @@ import lombok.Data;
 
 @Data
 public class ConfirmOrderSaveReq {
-
-    /**
-     * id
-     */
-    private Long id;
-
-    /**
-     * 会员id
-     */
-    @NotNull(message = "【会员id】不能为空")
-    private Long memberId;
 
     /**
      * 日期
@@ -53,27 +44,9 @@ public class ConfirmOrderSaveReq {
     private Long dailyTrainTicketId;
 
     /**
-     * 车票
+     * 车票，前端传的是Json数据，自动映射
      */
     @NotBlank(message = "【车票】不能为空")
-    private String tickets;
-
-    /**
-     * 订单状态|枚举[ConfirmOrderStatusEnum]
-     */
-    @NotBlank(message = "【订单状态】不能为空")
-    private String status;
-
-    /**
-     * 新增时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
-    private Date updateTime;
+    private List<ConfirmOrderTicketReq> tickets;
 
 }
