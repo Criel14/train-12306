@@ -1,5 +1,8 @@
 package com.criel.train.business.enumeration;
 
+/**
+ * 订单状态
+ */
 public enum ConfirmOrderStatusEnum {
 
     INIT("I", "初始"),
@@ -18,7 +21,8 @@ public enum ConfirmOrderStatusEnum {
         this.desc = desc;
     }
 
-    @Override    public String toString() {
+    @Override
+    public String toString() {
         return "ConfirmOrderStatusEnum{" +
                 "code='" + code + '\'' +
                 ", desc='" + desc + '\'' +
