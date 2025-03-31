@@ -1,7 +1,11 @@
 package com.criel.train.business.service;
 
 import com.criel.train.business.domain.generated.*;
+import com.criel.train.business.feign.MemberFeign;
 import com.criel.train.business.mapper.customer.DailyTrainTicketMapperCustomer;
+import com.criel.train.business.req.ConfirmOrderTicketReq;
+import com.criel.train.common.context.LoginMemberContext;
+import com.criel.train.common.req.MemberTicketReq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +30,9 @@ public class AfterConfirmOrderService {
     @Autowired
     private DailyTrainTicketMapperCustomer dailyTrainTicketMapperCustomer;
 
+    @Autowired
+    private MemberFeign memberFeign;
+
     /**
      * 执行完ConfirmOrderService的confirm方法后，执行该方法
      * 用于保存数据到持久层
@@ -34,12 +41,15 @@ public class AfterConfirmOrderService {
      * @param seatsResult
      */
     @Transactional
-    public void afterConfirm(DailyTrainTicket dailyTrainTicket, List<DailyTrainSeat> seatsResult) {
+    public void afterConfirm(DailyTrainTicket dailyTrainTicket, List<DailyTrainSeat> seatsResult, List<ConfirmOrderTicketReq> tickets) {
 
         int startIndex = dailyTrainTicket.getStartIndex();
         int endIndex = dailyTrainTicket.getEndIndex();
 
-        for (DailyTrainSeat seat : seatsResult) {
+        for (int j = 0; j < seatsResult.size(); j++) {
+            ConfirmOrderTicketReq ticket = tickets.get(j);
+            DailyTrainSeat seat = seatsResult.get(j);
+
             // 更新daily_train_seat每日座位表的sell字段
             dailyTrainSeatService.updateSellById(seat.getId(), seat.getSell());
 
@@ -82,12 +92,41 @@ public class AfterConfirmOrderService {
                     minStartIndex, maxStartIndex, minEndIndex, maxEndIndex);
 
 
-
-            // 更新购票记录表 (?)
+            // 更新ticket会员购票记录表
+            MemberTicketReq memberTicketReq = createMemberTicketReq(dailyTrainTicket, ticket, seat);
+            memberFeign.save(memberTicketReq);
 
             // 更新confirm_order表状态
+
+
         }
 
 
+    }
+
+    /**
+     * 构造保存会员购票信息参数
+     *
+     * @param dailyTrainTicket
+     * @param ticket
+     * @param seat
+     * @return
+     */
+    private static MemberTicketReq createMemberTicketReq(DailyTrainTicket dailyTrainTicket, ConfirmOrderTicketReq ticket, DailyTrainSeat seat) {
+        MemberTicketReq memberTicketReq = new MemberTicketReq();
+        memberTicketReq.setMemberId(LoginMemberContext.getId());
+        memberTicketReq.setPassengerId(ticket.getPassengerId());
+        memberTicketReq.setPassengerName(ticket.getPassengerName());
+        memberTicketReq.setTrainDate(dailyTrainTicket.getDate());
+        memberTicketReq.setTrainCode(dailyTrainTicket.getTrainCode());
+        memberTicketReq.setCarriageIndex(seat.getCarriageIndex());
+        memberTicketReq.setSeatRow(seat.getRow());
+        memberTicketReq.setSeatCol(seat.getCol());
+        memberTicketReq.setStartStation(dailyTrainTicket.getStart());
+        memberTicketReq.setStartTime(dailyTrainTicket.getStartTime());
+        memberTicketReq.setEndStation(dailyTrainTicket.getEnd());
+        memberTicketReq.setEndTime(dailyTrainTicket.getEndTime());
+        memberTicketReq.setSeatType(seat.getSeatType());
+        return memberTicketReq;
     }
 }

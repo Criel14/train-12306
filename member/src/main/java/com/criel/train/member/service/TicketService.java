@@ -3,6 +3,7 @@ package com.criel.train.member.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.common.req.MemberTicketReq;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -66,5 +68,19 @@ public class TicketService {
 
     public void delete(Long id) {
         ticketMapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 保存会员的购票信息
+     *
+     * @param memberTicketReq
+     */
+    public void saveMemberTicket(MemberTicketReq memberTicketReq) {
+        Date now = new Date();
+        Ticket ticket = BeanUtil.copyProperties(memberTicketReq, Ticket.class);
+        ticket.setId(SnowflakeUtil.getSnowflakeNextId());
+        ticket.setCreateTime(now);
+        ticket.setUpdateTime(now);
+        ticketMapper.insert(ticket);
     }
 }
