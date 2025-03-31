@@ -1,7 +1,9 @@
 package com.criel.train.business.service;
 
 import com.criel.train.business.domain.generated.*;
+import com.criel.train.business.enumeration.ConfirmOrderStatusEnum;
 import com.criel.train.business.feign.MemberFeign;
+import com.criel.train.business.mapper.ConfirmOrderMapper;
 import com.criel.train.business.mapper.customer.DailyTrainTicketMapperCustomer;
 import com.criel.train.business.req.ConfirmOrderTicketReq;
 import com.criel.train.common.context.LoginMemberContext;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -23,6 +26,9 @@ import java.util.List;
 public class AfterConfirmOrderService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AfterConfirmOrderService.class);
+
+    @Autowired
+    private ConfirmOrderMapper confirmOrderMapper;
 
     @Autowired
     private DailyTrainSeatService dailyTrainSeatService;
@@ -41,7 +47,10 @@ public class AfterConfirmOrderService {
      * @param seatsResult
      */
     @Transactional
-    public void afterConfirm(DailyTrainTicket dailyTrainTicket, List<DailyTrainSeat> seatsResult, List<ConfirmOrderTicketReq> tickets) {
+    public void afterConfirm(DailyTrainTicket dailyTrainTicket,
+                             List<DailyTrainSeat> seatsResult,
+                             List<ConfirmOrderTicketReq> tickets,
+                             ConfirmOrder confirmOrder) {
 
         int startIndex = dailyTrainTicket.getStartIndex();
         int endIndex = dailyTrainTicket.getEndIndex();
@@ -97,11 +106,12 @@ public class AfterConfirmOrderService {
             memberFeign.save(memberTicketReq);
 
             // 更新confirm_order表状态
-
-
+            ConfirmOrder newConfirmOrder = new ConfirmOrder();
+            newConfirmOrder.setId(confirmOrder.getId());
+            newConfirmOrder.setStatus(ConfirmOrderStatusEnum.SUCCESS.getCode());
+            newConfirmOrder.setUpdateTime(new Date());
+            confirmOrderMapper.updateByPrimaryKeySelective(newConfirmOrder);
         }
-
-
     }
 
     /**
