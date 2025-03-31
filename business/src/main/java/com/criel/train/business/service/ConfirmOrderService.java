@@ -232,7 +232,6 @@ public class ConfirmOrderService {
             LOG.error("保存最终选票结果时，seatsResult为null或者为空");
             // TODO 应该需要做结果处理，抛出异常什么的
         }
-
     }
 
 
