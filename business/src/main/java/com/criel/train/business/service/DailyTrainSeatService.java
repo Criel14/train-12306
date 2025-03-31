@@ -166,4 +166,17 @@ public class DailyTrainSeatService {
         dailyTrainSeatExample.createCriteria().andCarriageIndexEqualTo(carriageIndex).andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
         return dailyTrainSeatMapper.selectByExample(dailyTrainSeatExample);
     }
+
+    /**
+     * 更新DailyTrainSeat的sell字段
+     * @param id
+     * @param sell
+     */
+    public void updateSellById(Long id, String sell) {
+        DailyTrainSeat dailyTrainSeat = new DailyTrainSeat();
+        dailyTrainSeat.setId(id);
+        dailyTrainSeat.setSell(sell);
+        dailyTrainSeat.setUpdateTime(new Date());
+        dailyTrainSeatMapper.updateByPrimaryKeySelective(dailyTrainSeat);
+    }
 }

@@ -50,6 +50,9 @@ public class ConfirmOrderService {
     @Autowired
     private DailyTrainSeatService dailyTrainSeatService;
 
+    @Autowired
+    private AfterConfirmOrderService afterConfirmOrderService;
+
     public void save(ConfirmOrderSaveReq req) {
         DateTime now = DateTime.now();
         ConfirmOrder confirmOrder = BeanUtil.copyProperties(req, ConfirmOrder.class);
@@ -107,6 +110,7 @@ public class ConfirmOrderService {
         String start = req.getStart();
         String end = req.getEnd();
         List<ConfirmOrderTicketReq> tickets = req.getTickets();
+        int ticketCount = tickets.size();
         DailyTrainTicket dailyTrainTicket = dailyTrainTicketService.selectByUnique(date, trainCode, start, end);
         Integer startIndex = dailyTrainTicket.getStartIndex();
         Integer endIndex = dailyTrainTicket.getEndIndex();
@@ -161,13 +165,26 @@ public class ConfirmOrderService {
             }
         }
 
-        // 选择座位位置
+        // 获取第1张票，用于获取每个ticket中相同的数据：选座信息、座位类型等
         ConfirmOrderTicketReq ticketFirst = tickets.get(0);
+        // 获取该车次所有车厢
+        List<DailyTrainCarriage> carriages = dailyTrainCarriageService.selectBySeatTypeAndDateAndTrainCode(
+                ticketFirst.getSeatTypeCode(),
+                date,
+                trainCode);
+
+        // 选座结果
+        List<DailyTrainSeat> seatsResult = new ArrayList<>();
+        // 选择座位位置
         if (ticketFirst.getSeat() == null || ticketFirst.getSeat().isEmpty()) {
             // 用户无选座
             LOG.info("用户无选座");
-            ...
 
+            // 顺序查找座位
+            tryFindSeats(
+                    carriages, seatsResult,
+                    date, trainCode, ticketCount,
+                    startIndex, endIndex);
         } else {
             // 用户有选座 (有选座时，每个乘车人的座位类型都一样)
             LOG.info("用户有选座");
@@ -186,76 +203,129 @@ public class ConfirmOrderService {
                 seatOffsets.add(referSeatList.indexOf(ticket.getSeat()));
             }
 
-            // 获取车厢并遍历
-            List<DailyTrainCarriage> carriages = dailyTrainCarriageService.selectBySeatTypeAndDateAndTrainCode(
-                    ticketFirst.getSeatTypeCode(),
-                    date,
-                    trainCode);
             // 查找该车次中是否有符合【位置条件】的座位
-            // TODO 方法里找到后修改了seats的值，但是并没有返回数据，如修改，后面保存应该要用到，看看怎么弄
-            boolean isFound = tryFindAndSetSeat(carriages, date, trainCode, seatOffsets, colCount, startIndex, endIndex);
+            boolean isFound = tryFindSeatsByCondition(
+                    carriages, seatsResult,
+                    date, trainCode, seatOffsets,
+                    colCount, ticketCount,
+                    startIndex, endIndex);
             // 判断是否成功选上座位
             if (!isFound) {
-                // TODO 执行和用户未选座一样的选座方法（还没写这个方法）
-                ...
+                // 顺序查找座位
+                tryFindSeats(
+                        carriages, seatsResult,
+                        date, trainCode, ticketCount,
+                        startIndex, endIndex);
             }
-
 
         }
 
-        // 更新daily_train_ticket每日余票表、daily_train_seat每日座位表
+        // 更新seatsResult中每一个seat的sell字段
+        for (DailyTrainSeat seat : seatsResult) {
+            setSeatSell(seat, startIndex, endIndex);
+        }
 
-        // 更新购票记录表 (?)
-
-        // 更新confirm_order表状态
+        // 保存最终选票结果（事务）
+        if (seatsResult.isEmpty()) {
+            afterConfirmOrderService.afterConfirm(dailyTrainTicket,seatsResult);
+        } else {
+            LOG.error("保存最终选票结果时，seatsResult为null或者为空");
+            // TODO 应该需要做结果处理，抛出异常什么的
+        }
 
     }
 
 
     /**
      * 查找该车次中是否有符合【位置条件】的座位
+     * 如果找到，则把座位信息添加到seatsResult中
      *
      * @param carriages
+     * @param seatsResult 座位结果集，找到座位后，把座位信息添加到该列表中
      * @param date
      * @param trainCode
      * @param seatOffsets
-     * @param colCount
+     * @param colCount    列数，遍历时使用，调用时已经确定是几等座，该值也确定了
+     * @param ticketCount
      * @param startIndex
      * @param endIndex
      * @return
      */
-    private boolean tryFindAndSetSeat(List<DailyTrainCarriage> carriages, Date date, String trainCode, List<Integer> seatOffsets, int colCount, Integer startIndex, Integer endIndex) {
-        boolean isFound = false;
+    private boolean tryFindSeatsByCondition(List<DailyTrainCarriage> carriages,
+                                            List<DailyTrainSeat> seatsResult,
+                                            Date date, String trainCode, List<Integer> seatOffsets,
+                                            int colCount, int ticketCount,
+                                            Integer startIndex, Integer endIndex) {
+        // 遍历车厢
         for (DailyTrainCarriage carriage : carriages) {
             List<DailyTrainSeat> seats = dailyTrainSeatService.selectByCarriageIndexAndDateAndTrainCode(carriage.getIndex(), date, trainCode);
+            int seatCount = seats.size();
             // 数据库中seat的索引从1开始，但这里在seats列表中，就是直接从0开始
             // 遍历当前车厢内的符合【位置条件】的座位，不一定满足【售卖条件】
             for (int row = 0; row < carriage.getRowCount(); row++) {
                 // 遍历每个选定的座位位置
                 int checkedCount = 0;
                 for (Integer seatOffset : seatOffsets) {
-                    DailyTrainSeat seat = seats.get(colCount * row + seatOffset);
+                    int seatIndex = colCount * row + seatOffset;
+                    // 检查溢出
+                    if (seatIndex >= seatCount) {
+                        break;
+                    }
+                    DailyTrainSeat seat = seats.get(seatIndex);
                     // 检查【售卖条件】
                     if (checkSeat(seat, startIndex, endIndex)) {
                         checkedCount++;
                     }
                 }
-                // 若座位都选上了，再修改座位的sell数据
-                if (checkedCount == seatOffsets.size()) {
+
+                // 若座位都选上了，再一次性处理多张票的数据
+                if (checkedCount == ticketCount) {
                     for (Integer seatOffset : seatOffsets) {
                         DailyTrainSeat seat = seats.get(colCount * row + seatOffset);
-                        // 把sell对应位置变为1111
-                        setSeatSell(seat, startIndex, endIndex);
+                        // 保存数据到seatsResult
+                        seatsResult.add(seat);
                     }
-                    isFound = true;
-                    break;
+                    return true;
                 }
             }
-            if (isFound) {
-                break;
+        }
+        return false;
+    }
+
+    /**
+     * 顺序查找座位
+     * 由于调用该方法前已经校验过余票是否充足，所以查找结果一定为ture（应该）
+     * (不过多线程下可能会有问题，后面再说)
+     *
+     * @param carriages
+     * @param seatsResult
+     * @param date
+     * @param trainCode
+     * @param ticketCount
+     * @param startIndex
+     * @param endIndex
+     */
+    private void tryFindSeats(List<DailyTrainCarriage> carriages,
+                              List<DailyTrainSeat> seatsResult,
+                              Date date, String trainCode, int ticketCount,
+                              Integer startIndex, Integer endIndex) {
+        int checkedCount = 0;
+        // 遍历车厢
+        for (DailyTrainCarriage carriage : carriages) {
+            List<DailyTrainSeat> seats = dailyTrainSeatService.selectByCarriageIndexAndDateAndTrainCode(carriage.getIndex(), date, trainCode);
+            // 遍历座位
+            for (DailyTrainSeat seat : seats) {
+                // 检查【售卖条件】
+                if (checkSeat(seat, startIndex, endIndex)) {
+                    checkedCount++;
+                    // 保存数据到seatsResult
+                    seatsResult.add(seat);
+                    if (checkedCount == ticketCount) {
+                        return;
+                    }
+                }
             }
         }
-        return isFound;
     }
 
     /**
