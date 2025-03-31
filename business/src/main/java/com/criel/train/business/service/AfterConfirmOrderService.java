@@ -73,7 +73,7 @@ public class AfterConfirmOrderService {
 
             // 区间左端点的站序最小值：sell中从startIndex往前遇到的最后1个'0'的索引，也就是遇到的第1个'1'的下一个索引
             int minStartIndex = 1;
-            for (int i = startIndex - 1; i >= 0; i--) {
+            for (int i = startIndex - 2; i >= 0; i--) {
                 if (sell.charAt(i) == '1') {
                     minStartIndex = i + 2; // 第i+1个区间，第i+2起点站
                     break;
@@ -94,6 +94,10 @@ public class AfterConfirmOrderService {
                     break;
                 }
             }
+
+            LOG.info("sell: {}", sell);
+            LOG.info("startIndex: {}, endIndex: {}", startIndex, endIndex);
+            LOG.info("计算得到的4个边界值：minStartIndex = {}, maxStartIndex = {}, minEndIndex = {}, maxEndIndex = {}", minStartIndex, maxStartIndex, minEndIndex, maxEndIndex);
 
             // 调用持久层更新daily_train_ticket中的数据
             dailyTrainTicketMapperCustomer.updateCountBySell(

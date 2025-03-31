@@ -226,7 +226,7 @@ public class ConfirmOrderService {
         }
 
         // 保存最终选票结果（事务）
-        if (seatsResult.isEmpty()) {
+        if (!seatsResult.isEmpty()) {
             afterConfirmOrderService.afterConfirm(dailyTrainTicket,seatsResult, tickets, confirmOrder);
         } else {
             LOG.error("保存最终选票结果时，seatsResult为null或者为空");
@@ -325,6 +325,7 @@ public class ConfirmOrderService {
                 }
             }
         }
+        LOG.error("顺序查找座位时，并没有找到合适的座位");
     }
 
     /**

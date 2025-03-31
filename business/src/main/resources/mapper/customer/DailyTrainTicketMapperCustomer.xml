@@ -5,16 +5,16 @@
         update daily_train_ticket
         <set>
             <choose>
-                <when test="seatTypeCode == '1'">
+                <when test="seatTypeCode == '1'.toString()">
                     ydz = ydz - 1
                 </when>
-                <when test="seatTypeCode == '2'">
+                <when test="seatTypeCode == '2'.toString()">
                     edz = edz - 1
                 </when>
-                <when test="seatTypeCode == '3'">
+                <when test="seatTypeCode == '3'.toString()">
                     rw = rw - 1
                 </when>
-                <when test="seatTypeCode == '4'">
+                <when test="seatTypeCode == '4'.toString()">
                     yw = yw - 1
                 </when>
             </choose>
