@@ -3,6 +3,11 @@ Accept: application/json
 
 ###
 
+GET http://localhost:8002/business/test-query
+Accept: application/json
+
+###
+
 GET http://localhost:8000/business/admin/train/gen-seat/G8
 Accept: application/json
 
