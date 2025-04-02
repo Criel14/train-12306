@@ -8,6 +8,7 @@ import com.criel.train.business.mapper.customer.DailyTrainTicketMapperCustomer;
 import com.criel.train.business.req.ConfirmOrderTicketReq;
 import com.criel.train.common.context.LoginMemberContext;
 import com.criel.train.common.req.MemberTicketReq;
+import io.seata.spring.annotation.GlobalTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class AfterConfirmOrderService {
      * @param dailyTrainTicket
      * @param seatsResult
      */
-    @Transactional
+    @GlobalTransactional
     public void afterConfirm(DailyTrainTicket dailyTrainTicket,
                              List<DailyTrainSeat> seatsResult,
                              List<ConfirmOrderTicketReq> tickets,
@@ -105,7 +106,7 @@ public class AfterConfirmOrderService {
                     minStartIndex, maxStartIndex, minEndIndex, maxEndIndex);
 
 
-            // 更新ticket会员购票记录表
+            // 更新ticket会员购票记录表（远程调用）
             MemberTicketReq memberTicketReq = createMemberTicketReq(dailyTrainTicket, ticket, seat);
             memberFeign.save(memberTicketReq);
 
