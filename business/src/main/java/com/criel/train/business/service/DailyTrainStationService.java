@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.criel.train.business.domain.generated.DailyTrainTicket;
 import com.criel.train.business.domain.generated.TrainStation;
 import com.criel.train.common.exception.BusinessException;
 import com.criel.train.common.exception.BusinessExceptionEnum;
@@ -137,5 +138,17 @@ public class DailyTrainStationService {
         dailyTrainStation.setUpdateTime(now);
         dailyTrainStation.setDate(date);
         dailyTrainStationMapper.insert(dailyTrainStation);
+    }
+
+    /**
+     * 根据日期和车次返回车站数量
+     * @param date
+     * @param trainCode
+     * @return
+     */
+    public long countByTrainCode(Date date, String trainCode) {
+        DailyTrainStationExample dailyTrainStationExample = new DailyTrainStationExample();
+        dailyTrainStationExample.createCriteria().andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
+        return dailyTrainStationMapper.countByExample(dailyTrainStationExample);
     }
 }

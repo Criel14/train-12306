@@ -48,6 +48,9 @@ public class DailyTrainService {
     @Autowired
     private DailyTrainTicketService dailyTrainTicketService;
 
+    @Autowired
+    private SkTokenService skTokenService;
+
     public void save(DailyTrainSaveReq req) {
         DateTime now = DateTime.now();
         DailyTrain dailyTrain = BeanUtil.copyProperties(req, DailyTrain.class);
@@ -101,6 +104,7 @@ public class DailyTrainService {
      * 生成每日所有车次信息：车次、车站、车厢、座位
      * @param date
      */
+    @Transactional
     public void genDaily(Date date) {
         List<Train> trainList = trainService.selectAll();
         if (trainList == null || trainList.isEmpty()) {
@@ -140,6 +144,7 @@ public class DailyTrainService {
         dailyTrainCarriageService.genDaily(date, train.getCode());
         dailyTrainSeatService.genDaily(date, train.getCode());
         dailyTrainTicketService.genDaily(date, dailyTrain);
+        skTokenService.genDaily(date, train.getCode());
 
         LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), train.getCode());
     }

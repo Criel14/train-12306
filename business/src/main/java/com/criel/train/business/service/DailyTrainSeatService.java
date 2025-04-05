@@ -103,6 +103,23 @@ public class DailyTrainSeatService {
         return Math.toIntExact(seatCount);
     }
 
+    /**
+     * 生成对应日期、对应车次的座位数据（忽略类型）
+     *
+     * @param date
+     * @param trainCode
+     * @return
+     */
+    public int countSeat(Date date, String trainCode) {
+        DailyTrainSeatExample dailyTrainSeatExample = new DailyTrainSeatExample();
+        dailyTrainSeatExample.createCriteria().andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
+        long seatCount = dailyTrainSeatMapper.countByExample(dailyTrainSeatExample);
+        if (seatCount == 0L) {
+            return -1;
+        }
+        return Math.toIntExact(seatCount);
+    }
+
 
     /**
      * 生成对应日期、对应车次的座位数据
@@ -155,6 +172,7 @@ public class DailyTrainSeatService {
 
     /**
      * 根据车次、车厢、日期，查询该车厢所有座位，升序
+     *
      * @param carriageIndex
      * @param date
      * @param trainCode
@@ -169,6 +187,7 @@ public class DailyTrainSeatService {
 
     /**
      * 更新DailyTrainSeat的sell字段
+     *
      * @param id
      * @param sell
      */
