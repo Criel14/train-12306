@@ -3,6 +3,8 @@ package com.criel.train.business.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.criel.train.business.domain.generated.*;
 import com.criel.train.business.enumeration.ConfirmOrderStatusEnum;
@@ -108,6 +110,7 @@ public class ConfirmOrderService {
         confirmOrderMapper.deleteByPrimaryKey(id);
     }
 
+    @SentinelResource(value = "confirm", blockHandler = "confirmBlockHandler")
     public void confirm(ConfirmOrderSaveReq req) {
         // 分布式锁
         String lockKey = req.getTrainCode() + req.getDate();
@@ -394,5 +397,16 @@ public class ConfirmOrderService {
             resSell.setCharAt(i, '1');
         }
         seat.setSell(resSell.toString());
+    }
+
+    /**
+     * 降级方法
+     *
+     * @param req 原方法参数
+     * @param e
+     */
+    private void confirmBlockHandler(ConfirmOrderSaveReq req, BlockException e) {
+        LOG.info("请求被限流:{}",req);
+        throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_FLOW_EXCEPTION);
     }
 }

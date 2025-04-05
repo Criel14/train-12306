@@ -23,7 +23,8 @@ public enum BusinessExceptionEnum {
     BUSINESS_TRAIN_STATION_IN_TIME_OUT_TIME_ERROR("出站时间不得早于入站时间"),
     CONFIRM_ORDER_TICKET_COUNT_ERROR("余票不足"),
     CONFIRM_ORDER_SAVE_ERROR("服务器忙，请稍后再试"),
-    CONFIRM_ORDER_LOCK_FAIL("当前抢票人数过多，请稍后再试");
+    CONFIRM_ORDER_LOCK_FAIL("当前抢票人数过多，请稍后再试"),
+    CONFIRM_ORDER_FLOW_EXCEPTION("当前抢票人数过多，请稍后再试");
 
     private final String desc;
 
