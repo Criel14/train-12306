@@ -20,7 +20,7 @@ public class BatchApplication {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(BatchApplication.class);
         Environment env = app.run(args).getEnvironment();
-        LOG.info("member启动成功...");
-        LOG.info("member地址:http://127.0.0.1:{}", env.getProperty("server.port"));
+        LOG.info("batch启动成功...");
+        LOG.info("batch地址:http://127.0.0.1:{}", env.getProperty("server.port"));
     }
 }

@@ -26,8 +26,8 @@ public class BusinessApplication {
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(BusinessApplication.class);
         Environment env = app.run(args).getEnvironment();
-        LOG.info("member启动成功...");
-        LOG.info("member地址:http://127.0.0.1:{}", env.getProperty("server.port"));
+        LOG.info("business启动成功...");
+        LOG.info("business地址:http://127.0.0.1:{}", env.getProperty("server.port"));
         initFlowRules();
     }
 

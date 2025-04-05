@@ -19,8 +19,8 @@ public class TestController {
 
     @GetMapping("/test-connect")
     public String testConnect() {
-        String feignRes = businessFeign.testConnect();
-        LOG.info("feignRes: {}", feignRes);
+//        String feignRes = businessFeign.testConnect();
+//        LOG.info("feignRes: {}", feignRes);
         return "batch test success ";
     }
 }
