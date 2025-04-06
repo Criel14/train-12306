@@ -108,7 +108,7 @@ public class AfterConfirmOrderService {
 
             // 更新ticket会员购票记录表（远程调用）
             MemberTicketReq memberTicketReq = createMemberTicketReq(dailyTrainTicket, ticket, seat);
-            memberFeign.save(memberTicketReq);
+//            memberFeign.save(memberTicketReq);
 
             // 更新confirm_order表状态
             ConfirmOrder newConfirmOrder = new ConfirmOrder();
