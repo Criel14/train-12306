@@ -8,6 +8,7 @@ import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.criel.train.business.domain.generated.*;
 import com.criel.train.business.enumeration.ConfirmOrderStatusEnum;
+import com.criel.train.business.enumeration.RedisKeyPreEnum;
 import com.criel.train.business.enumeration.SeatColEnum;
 import com.criel.train.business.enumeration.SeatTypeEnum;
 import com.criel.train.business.req.ConfirmOrderTicketReq;
@@ -63,6 +64,9 @@ public class ConfirmOrderService {
     @Autowired
     private RedissonClient redissonClient;
 
+    @Autowired
+    private SkTokenService skTokenService;
+
     public void save(ConfirmOrderSaveReq req) {
         DateTime now = DateTime.now();
         ConfirmOrder confirmOrder = BeanUtil.copyProperties(req, ConfirmOrder.class);
@@ -112,8 +116,14 @@ public class ConfirmOrderService {
 
     @SentinelResource(value = "confirm", blockHandler = "confirmBlockHandler")
     public void confirm(ConfirmOrderSaveReq req) {
+        // 校验令牌
+        boolean validSkToken = skTokenService.validSkToken(req.getDate(), req.getTrainCode(), LoginMemberContext.getId());
+        if (!validSkToken) {
+            throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_SK_TOKEN_FAIL);
+        }
+
         // 分布式锁
-        String lockKey = req.getTrainCode() + req.getDate();
+        String lockKey = RedisKeyPreEnum.CONFIRM_ORDER.getCode() + req.getTrainCode() + ":" + req.getDate();
         RLock rLock = redissonClient.getLock(lockKey);
         boolean locked = false;
         try {
@@ -406,7 +416,7 @@ public class ConfirmOrderService {
      * @param e
      */
     private void confirmBlockHandler(ConfirmOrderSaveReq req, BlockException e) {
-        LOG.info("请求被限流:{}",req);
+        LOG.info("请求被限流:{}", req);
         throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_FLOW_EXCEPTION);
     }
 }
