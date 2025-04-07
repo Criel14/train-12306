@@ -44,27 +44,20 @@ public class DailyTrainTicketService {
     @Autowired
     private DailyTrainSeatService dailyTrainSeatService;
 
-    public void save(DailyTrainTicketSaveReq req) {
-        DateTime now = DateTime.now();
-        DailyTrainTicket dailyTrainTicket = BeanUtil.copyProperties(req, DailyTrainTicket.class);
-        if (ObjectUtil.isNull(dailyTrainTicket.getId())) {
-            dailyTrainTicket.setId(SnowflakeUtil.getSnowflakeNextId());
-            dailyTrainTicket.setCreateTime(now);
-            dailyTrainTicket.setUpdateTime(now);
-            dailyTrainTicketMapper.insert(dailyTrainTicket);
-        } else {
-            dailyTrainTicket.setUpdateTime(now);
-            dailyTrainTicketMapper.updateByPrimaryKey(dailyTrainTicket);
-        }
-    }
-
-    public PageResp<DailyTrainTicketQueryResp> queryList(DailyTrainTicketQueryReq req) {
+    /**
+     * 管理员余票查询
+     *
+     * @param req
+     * @return
+     */
+    public PageResp<DailyTrainTicketQueryResp> queryListAdmin(DailyTrainTicketQueryReq req) {
         DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
         dailyTrainTicketExample.setOrderByClause("id desc");
         DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();
 
         LOG.info("DailyTrainTicketQueryReq: {}", req.toString());
 
+        // 前端应该四个参数都会传来的，这里只是做了健壮性
         if (req.getDate() != null) {
             criteria.andDateEqualTo(req.getDate());
         }
@@ -95,8 +88,39 @@ public class DailyTrainTicketService {
         return pageResp;
     }
 
-    public void delete(Long id) {
-        dailyTrainTicketMapper.deleteByPrimaryKey(id);
+    /**
+     * 用户余票查询
+     *
+     * @param req
+     * @return
+     */
+    public PageResp<DailyTrainTicketQueryResp> queryListMember(DailyTrainTicketQueryReq req) {
+        DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
+        dailyTrainTicketExample.setOrderByClause("id desc");
+        DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();
+
+        LOG.info("DailyTrainTicketQueryReq: {}", req.toString());
+
+        // 前端应该3个参数都会传来的，这里只是做了健壮性
+        if (req.getDate() != null) {
+            criteria.andDateEqualTo(req.getDate());
+        }
+        if (req.getStart() != null && !req.getStart().isEmpty()) {
+            criteria.andStartEqualTo(req.getStart());
+        }
+        if (req.getEnd() != null && !req.getEnd().isEmpty()) {
+            criteria.andEndEqualTo(req.getEnd());
+        }
+
+        PageHelper.startPage(req.getPage(), req.getSize());
+        List<DailyTrainTicket> dailyTrainTicketList = dailyTrainTicketMapper.selectByExample(dailyTrainTicketExample);
+
+        PageInfo<DailyTrainTicket> pageInfo = new PageInfo<>(dailyTrainTicketList);
+        List<DailyTrainTicketQueryResp> list = BeanUtil.copyToList(dailyTrainTicketList, DailyTrainTicketQueryResp.class);
+        PageResp<DailyTrainTicketQueryResp> pageResp = new PageResp<>();
+        pageResp.setTotal(pageInfo.getTotal());
+        pageResp.setList(list);
+        return pageResp;
     }
 
     /**
@@ -193,6 +217,7 @@ public class DailyTrainTicketService {
 
     /**
      * 根据唯一键查询
+     *
      * @param date
      * @param trainCode
      * @param start

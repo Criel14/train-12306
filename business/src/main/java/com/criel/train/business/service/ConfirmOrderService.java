@@ -198,7 +198,6 @@ public class ConfirmOrderService {
             }
 
             // 上面没有异常则开始选座
-            // TODO 这里暂时有超卖问题
 
             // 获取第1张票，用于获取每个ticket中相同的数据：选座信息、座位类型等
             ConfirmOrderTicketReq ticketFirst = tickets.get(0);

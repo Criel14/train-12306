@@ -22,7 +22,7 @@ public class DailyTrainTicketController {
 
     @GetMapping("/query-list")
     public CommonResp<PageResp<DailyTrainTicketQueryResp>> queryList(@Valid DailyTrainTicketQueryReq req) {
-        PageResp<DailyTrainTicketQueryResp> list = dailyTrainTicketService.queryList(req);
+        PageResp<DailyTrainTicketQueryResp> list = dailyTrainTicketService.queryListMember(req);
         return CommonResp.success(list);
     }
 
