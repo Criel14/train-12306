@@ -3,7 +3,7 @@ package com.criel.train.member.service;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.criel.train.common.constant.BusinessConstant;
-import com.criel.train.common.constant.RedisKeyConstant;
+import com.criel.train.common.constant.RedisConstant;
 import com.criel.train.common.exception.BusinessException;
 import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.criel.train.common.properties.SmsProperties;
@@ -174,7 +174,7 @@ public class MemberService {
     private void saveSmsRecord(SmsRecord smsRecord) {
         LOG.info("保存短信记录到redis：{}",smsRecord);
         // 定义key
-        String key = RedisKeyConstant.SMS_CODE_KEY + smsRecord.getMobile();
+        String key = RedisConstant.SMS_CODE_KEY + smsRecord.getMobile();
         // 保存
         redisTemplate.opsForValue().set(key, smsRecord, smsProperties.getExpireTime(), TimeUnit.MILLISECONDS);
     }
@@ -187,7 +187,7 @@ public class MemberService {
      * @return 验证码过期或未获取：0；验证码正确：1；验证码错误 -1
      */
     public int verifyCode(String mobile, String inputCode) {
-        String key = RedisKeyConstant.SMS_CODE_KEY + mobile;
+        String key = RedisConstant.SMS_CODE_KEY + mobile;
         SmsRecord record = (SmsRecord) redisTemplate.opsForValue().get(key);
         if (record == null) {
             return 0; // 没有验证码记录，验证码已过期

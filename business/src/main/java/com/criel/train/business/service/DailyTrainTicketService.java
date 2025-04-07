@@ -4,10 +4,13 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.json.JSONUtil;
+import com.criel.train.business.domain.RedisData;
 import com.criel.train.business.domain.generated.DailyTrain;
 import com.criel.train.business.domain.generated.TrainStation;
 import com.criel.train.business.enumeration.SeatTypeEnum;
 import com.criel.train.business.enumeration.TrainTypeEnum;
+import com.criel.train.common.constant.RedisConstant;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.criel.train.common.resp.PageResp;
@@ -22,13 +25,17 @@ import jakarta.annotation.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DailyTrainTicketService {
@@ -43,6 +50,12 @@ public class DailyTrainTicketService {
 
     @Autowired
     private DailyTrainSeatService dailyTrainSeatService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private BloomFilterService bloomFilterService;
 
     /**
      * 管理员余票查询
@@ -121,6 +134,30 @@ public class DailyTrainTicketService {
         pageResp.setTotal(pageInfo.getTotal());
         pageResp.setList(list);
         return pageResp;
+    }
+
+    /**
+     * 根据唯一键查询
+     *
+     * @param date
+     * @param trainCode
+     * @param start
+     * @param end
+     * @return
+     */
+    public DailyTrainTicket selectByUnique(Date date, String trainCode, String start, String end) {
+        DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
+        dailyTrainTicketExample.createCriteria()
+                .andDateEqualTo(date)
+                .andTrainCodeEqualTo(trainCode)
+                .andStartEqualTo(start)
+                .andEndEqualTo(end);
+        List<DailyTrainTicket> dailyTrainTicketList = dailyTrainTicketMapper.selectByExample(dailyTrainTicketExample);
+        if (!dailyTrainTicketList.isEmpty()) {
+            return dailyTrainTicketList.get(0);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -216,26 +253,33 @@ public class DailyTrainTicketService {
     }
 
     /**
-     * 根据唯一键查询
+     * 生成每日余票信息进redis，同时保存到布隆过滤器中;
+     * redis中key为daily:ticket:{date}:from:{start}:to:{end}，value为List泛型dailyTrainTicket
+     * 即List保存date日期，从start站到end站的所有dailyTrainTicket
      *
      * @param date
-     * @param trainCode
-     * @param start
-     * @param end
-     * @return
      */
-    public DailyTrainTicket selectByUnique(Date date, String trainCode, String start, String end) {
+    public void genDailyRedis(Date date) {
+        // 获取date的所有车票信息
         DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
-        dailyTrainTicketExample.createCriteria()
-                .andDateEqualTo(date)
-                .andTrainCodeEqualTo(trainCode)
-                .andStartEqualTo(start)
-                .andEndEqualTo(end);
+        dailyTrainTicketExample.createCriteria().andDateEqualTo(date);
         List<DailyTrainTicket> dailyTrainTicketList = dailyTrainTicketMapper.selectByExample(dailyTrainTicketExample);
-        if (!dailyTrainTicketList.isEmpty()) {
-            return dailyTrainTicketList.get(0);
-        } else {
-            return null;
+
+        // 按照【起点站 : 终点站】来分组
+        Map<String, List<DailyTrainTicket>> dailyTrainTicketGroupMap = dailyTrainTicketList.stream().collect(
+                Collectors.groupingBy(dailyTrainTicket -> "from:" + dailyTrainTicket.getStart() + ":to:" + dailyTrainTicket.getEnd())
+        );
+
+        // 保存到redis和布隆过滤器
+        for (Map.Entry<String, List<DailyTrainTicket>> entry : dailyTrainTicketGroupMap.entrySet()) {
+            String key = RedisConstant.DAILY_TRAIN_KEY + DateUtil.formatDate(date) + ":" + entry.getKey();
+            List<DailyTrainTicket> tickets = entry.getValue();
+            // 封装逻辑过期
+            RedisData redisData = new RedisData(LocalDateTime.now().plusSeconds(RedisConstant.EXPIRE_TIME_SECOND), tickets);
+            // 缓存redis
+            redisTemplate.opsForValue().set(key, JSONUtil.toJsonStr(redisData));
+            // 缓存布隆过滤器
+            bloomFilterService.addTicketKey(key);
         }
     }
 }

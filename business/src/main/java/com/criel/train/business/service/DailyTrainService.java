@@ -101,6 +101,18 @@ public class DailyTrainService {
     }
 
     /**
+     * 根据日期查询车次信息（返回某日的所有车次信息）
+     *
+     * @param date
+     * @return
+     */
+    public List<DailyTrain> selectByDate(Date date) {
+        DailyTrainExample dailyTrainExample = new DailyTrainExample();
+        dailyTrainExample.createCriteria().andDateEqualTo(date);
+        return dailyTrainMapper.selectByExample(dailyTrainExample);
+    }
+
+    /**
      * 生成每日所有车次信息：车次、车站、车厢、座位
      * @param date
      */
@@ -139,12 +151,19 @@ public class DailyTrainService {
         dailyTrain.setDate(date);
         dailyTrainMapper.insert(dailyTrain);
 
-        // 生成其他信息
+        // 生成每日车站信息
         dailyTrainStationService.genDaily(date, train.getCode());
+        // 生成每日车厢信息
         dailyTrainCarriageService.genDaily(date, train.getCode());
+        // 生成每日座位信息
         dailyTrainSeatService.genDaily(date, train.getCode());
+        // 生成每日余票信息
         dailyTrainTicketService.genDaily(date, dailyTrain);
+        // 生成每日令牌信息
         skTokenService.genDaily(date, train.getCode());
+
+        // 生成每日余票redis缓存
+        dailyTrainTicketService.genDailyRedis(date);
 
         LOG.info("开始生成{}的{}车次的车站信息", DateUtil.formatDate(date), train.getCode());
     }
