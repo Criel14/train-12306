@@ -38,6 +38,9 @@ public class AfterConfirmOrderService {
     private DailyTrainTicketMapperCustomer dailyTrainTicketMapperCustomer;
 
     @Autowired
+    private DailyTrainTicketService dailyTrainTicketService;
+
+    @Autowired
     private MemberFeign memberFeign;
 
     /**
@@ -105,10 +108,12 @@ public class AfterConfirmOrderService {
                     seat.getDate(), seat.getTrainCode(), seat.getSeatType(),
                     minStartIndex, maxStartIndex, minEndIndex, maxEndIndex);
 
+            // 更新redis
+            dailyTrainTicketService.updateRedisCache(seat.getDate(), dailyTrainTicket.getStart(), dailyTrainTicket.getEnd());
 
             // 更新ticket会员购票记录表（远程调用）
             MemberTicketReq memberTicketReq = createMemberTicketReq(dailyTrainTicket, ticket, seat);
-//            memberFeign.save(memberTicketReq);
+            memberFeign.save(memberTicketReq);
 
             // 更新confirm_order表状态
             ConfirmOrder newConfirmOrder = new ConfirmOrder();

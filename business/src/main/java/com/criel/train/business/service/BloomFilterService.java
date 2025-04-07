@@ -2,6 +2,8 @@ package com.criel.train.business.service;
 
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,6 +11,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class BloomFilterService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BloomFilterService.class);
+
 
     private final RBloomFilter<String> bloomFilter;
 
