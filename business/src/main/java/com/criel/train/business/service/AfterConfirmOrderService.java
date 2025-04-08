@@ -115,7 +115,7 @@ public class AfterConfirmOrderService {
             MemberTicketReq memberTicketReq = createMemberTicketReq(dailyTrainTicket, ticket, seat, confirmOrder.getMemberId());
             memberFeign.save(memberTicketReq);
 
-            // 更新confirm_order表状态
+            // 更新订单状态，更新confirm_order订单表状态为：SUCCESS成功
             ConfirmOrder newConfirmOrder = new ConfirmOrder();
             newConfirmOrder.setId(confirmOrder.getId());
             newConfirmOrder.setStatus(ConfirmOrderStatusEnum.SUCCESS.getCode());

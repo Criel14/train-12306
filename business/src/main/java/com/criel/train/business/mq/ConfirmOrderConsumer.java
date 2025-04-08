@@ -1,6 +1,7 @@
 package com.criel.train.business.mq;
 
 import com.alibaba.fastjson.JSON;
+import com.criel.train.business.dto.ConfirmOrderMQDto;
 import com.criel.train.business.req.ConfirmOrderQueryReq;
 import com.criel.train.business.req.ConfirmOrderSaveReq;
 import com.criel.train.business.service.ConfirmOrderService;
@@ -27,12 +28,12 @@ public class ConfirmOrderConsumer implements RocketMQListener<MessageExt> {
     @Override
     public void onMessage(MessageExt messageExt) {
         byte[] body = messageExt.getBody();
-        ConfirmOrderSaveReq req = JSON.parseObject(body, ConfirmOrderSaveReq.class);
+        ConfirmOrderMQDto dto = JSON.parseObject(body, ConfirmOrderMQDto.class);
 
         // 赋值流水号（LOG_ID），同步生产者线程
-        MDC.put("LOG_ID", req.getLogId());
+        MDC.put("LOG_ID", dto.getLogId());
         log.info("收到消息:{}", new String(body));
 
-        confirmOrderService.confirm(req);
+        confirmOrderService.confirm(dto);
     }
 }

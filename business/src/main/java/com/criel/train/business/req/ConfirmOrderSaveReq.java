@@ -13,22 +13,6 @@ import lombok.Data;
 public class ConfirmOrderSaveReq {
 
     /**
-     * 用户ID(无需传入，传入后赋值)
-     */
-    private Long memberId;
-
-    /**
-     * 订单ID(无需传入，传入后赋值)
-     *
-     */
-    private long confirmOrderId;
-
-    /**
-     * 日志ID(无需传入，传入后赋值)
-     */
-    private String LogId;
-
-    /**
      * 日期
      */
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")

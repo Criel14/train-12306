@@ -4,6 +4,7 @@ import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.criel.train.business.domain.generated.ConfirmOrder;
+import com.criel.train.business.dto.ConfirmOrderMQDto;
 import com.criel.train.business.enumeration.ConfirmOrderStatusEnum;
 import com.criel.train.business.enumeration.RedisKeyPreEnum;
 import com.criel.train.business.mapper.ConfirmOrderMapper;
@@ -52,15 +53,14 @@ public class BeforeConfirmOrderService {
             throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_SK_TOKEN_FAIL);
         }
 
-        // 这里需要传入memberId，因为在MQ的消费者那里不是同一个线程，拿不到ThreadLocal里的数据
-        req.setMemberId(LoginMemberContext.getId());
-
         // 保存confirm_order订单表，初始化状态
         Date now = new Date();
         long confirmOrderId = SnowflakeUtil.getSnowflakeNextId();
+        Long memberId = LoginMemberContext.getId();
+
         ConfirmOrder confirmOrder = new ConfirmOrder();
         confirmOrder.setId(confirmOrderId);
-        confirmOrder.setMemberId(req.getMemberId());
+        confirmOrder.setMemberId(memberId);
         confirmOrder.setDate(req.getDate());
         confirmOrder.setTrainCode(req.getTrainCode());
         confirmOrder.setStart(req.getStart());
@@ -72,14 +72,14 @@ public class BeforeConfirmOrderService {
         confirmOrder.setTickets(JSON.toJSONString(req.getTickets()));
         confirmOrderMapper.insert(confirmOrder);
 
-        // 传递订单id
-        req.setConfirmOrderId(confirmOrderId);
-        // 传递日志id
-        req.setLogId(MDC.get("LOG_ID"));
-        // 向MQ发送购票的请求参数
-        rocketMQTemplate.convertAndSend(RocketMQTopicConstant.CONFIRM_ORDER_TOPIC, JSON.toJSONString(req));
+        // 向MQ发送confirmOrderMQDto
+        ConfirmOrderMQDto confirmOrderMQDto = new ConfirmOrderMQDto();
+        confirmOrderMQDto.setDate(req.getDate());
+        confirmOrderMQDto.setTrainCode(req.getTrainCode());
+        confirmOrderMQDto.setLogId(MDC.get("LOG_ID"));
 
-        LOG.info("排队购票，发送MQ");
+        rocketMQTemplate.convertAndSend(RocketMQTopicConstant.CONFIRM_ORDER_TOPIC, JSON.toJSONString(confirmOrderMQDto));
+        LOG.info("排队购票，已发送MQ");
     }
 
     /**
