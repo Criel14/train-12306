@@ -12,7 +12,16 @@ import lombok.Data;
 @Data
 public class ConfirmOrderSaveReq {
 
+    /**
+     * 用户ID(无需传入，插入时赋值)
+     */
     private Long memberId;
+
+    /**
+     * 订单ID(无需传入，插入时赋值)
+     *
+     */
+    private long confirmOrderId;
 
     /**
      * 日期
