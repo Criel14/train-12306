@@ -138,6 +138,8 @@ public class ConfirmOrderService {
                 return;
             }
 
+            LOG.info("开始处理{}日期{}车次的所有订单", DateUtil.formatDate(date), trainCode);
+
             // 获得锁成功后做循坏执行购票逻辑
             while (true) {
                 // 获取订单date日期trainCode车次的所有的状态为INIT的订单信息

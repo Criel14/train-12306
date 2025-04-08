@@ -6,7 +6,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.criel.train.business.enumeration.RedisKeyPreEnum;
 import com.criel.train.business.mapper.customer.SkTokenMapperCustomer;
-import com.criel.train.common.context.LoginMemberContext;
 import com.criel.train.common.exception.BusinessException;
 import com.criel.train.common.exception.BusinessExceptionEnum;
 import com.github.pagehelper.PageHelper;
@@ -20,13 +19,12 @@ import com.criel.train.business.req.SkTokenQueryReq;
 import com.criel.train.business.req.SkTokenSaveReq;
 import com.criel.train.business.resp.SkTokenQueryResp;
 import jakarta.annotation.Resource;
-import org.checkerframework.checker.units.qual.A;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -54,7 +52,7 @@ public class SkTokenService {
     private RedissonClient redissonClient;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     public void save(SkTokenSaveReq req) {
         DateTime now = DateTime.now();
@@ -146,7 +144,8 @@ public class SkTokenService {
         RLock rLock = redissonClient.getLock(tokenLockKey);
         boolean locked = false;
         try {
-            locked = rLock.tryLock(5, TimeUnit.SECONDS);
+            // 5s后自动释放锁，这样是关闭看门狗机制
+            locked = rLock.tryLock(5, 5, TimeUnit.SECONDS);
             if (!locked) {
                 LOG.info("会员{}获取{}日期{}车次的令牌失败，锁被占用", memberId, DateUtil.formatDate(date), trainCode);
 
@@ -160,13 +159,20 @@ public class SkTokenService {
         LOG.info("会员{}获取{}日期{}车次的令牌成功", memberId, DateUtil.formatDate(date), trainCode);
 
         String countLockKey = RedisKeyPreEnum.SK_TOKEN_COUNT.getCode() + trainCode + ":" + DateUtil.formatDate(date);
-        Long tokenCountResult = (Long) redisTemplate.opsForValue().get(countLockKey);
-        if (tokenCountResult != null) {
+
+        // 检查缓存中是否有数据
+        String countStr = stringRedisTemplate.opsForValue().get(countLockKey);
+        if (countStr != null && !countStr.isEmpty()) {
             // 如果缓存中有数据
-            long tokenCount = redisTemplate.opsForValue().decrement(countLockKey, 1);
+            Integer tokenCount = Integer.parseInt(countStr);
+            // 扣减tokenCount
+            tokenCount = tokenCount - 1;
+            stringRedisTemplate.opsForValue().set(countLockKey, String.valueOf(tokenCount), 30, TimeUnit.SECONDS);
+
+            // 扣减成功则刷新缓存，更新数据库
             if (tokenCount >= 0) {
                 // 刷新缓存时间
-                redisTemplate.expire(countLockKey, 60, TimeUnit.SECONDS);
+                stringRedisTemplate.expire(countLockKey, 30, TimeUnit.SECONDS);
                 // 每5次更新一次数据库
                 // TODO 这里最好改成定时任务
                 if (tokenCount % 5 == 0) {
@@ -188,10 +194,10 @@ public class SkTokenService {
 
             // 缓存
             Integer count = skTokenList.get(0).getCount();
-            if (skTokenList.get(0).getCount() <= 0){
+            if (skTokenList.get(0).getCount() <= 0) {
                 return false;
             }
-            redisTemplate.opsForValue().set(countLockKey, count, 60, TimeUnit.SECONDS);
+            stringRedisTemplate.opsForValue().set(countLockKey, String.valueOf(count), 30, TimeUnit.SECONDS);
         }
         return true;
     }
