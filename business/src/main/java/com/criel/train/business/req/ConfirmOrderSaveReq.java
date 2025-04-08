@@ -12,6 +12,8 @@ import lombok.Data;
 @Data
 public class ConfirmOrderSaveReq {
 
+    private Long memberId;
+
     /**
      * 日期
      */

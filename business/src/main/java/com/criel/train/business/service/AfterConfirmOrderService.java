@@ -112,7 +112,7 @@ public class AfterConfirmOrderService {
             dailyTrainTicketService.updateRedisCache(seat.getDate(), dailyTrainTicket.getStart(), dailyTrainTicket.getEnd());
 
             // 更新ticket会员购票记录表（远程调用）
-            MemberTicketReq memberTicketReq = createMemberTicketReq(dailyTrainTicket, ticket, seat);
+            MemberTicketReq memberTicketReq = createMemberTicketReq(dailyTrainTicket, ticket, seat, confirmOrder.getMemberId());
             memberFeign.save(memberTicketReq);
 
             // 更新confirm_order表状态
@@ -132,9 +132,12 @@ public class AfterConfirmOrderService {
      * @param seat
      * @return
      */
-    private static MemberTicketReq createMemberTicketReq(DailyTrainTicket dailyTrainTicket, ConfirmOrderTicketReq ticket, DailyTrainSeat seat) {
+    private static MemberTicketReq createMemberTicketReq(DailyTrainTicket dailyTrainTicket,
+                                                         ConfirmOrderTicketReq ticket,
+                                                         DailyTrainSeat seat,
+                                                         Long memberId) {
         MemberTicketReq memberTicketReq = new MemberTicketReq();
-        memberTicketReq.setMemberId(LoginMemberContext.getId());
+        memberTicketReq.setMemberId(memberId);
         memberTicketReq.setPassengerId(ticket.getPassengerId());
         memberTicketReq.setPassengerName(ticket.getPassengerName());
         memberTicketReq.setTrainDate(dailyTrainTicket.getDate());
