@@ -5,7 +5,7 @@ package com.criel.train.business.enumeration;
  */
 public enum ConfirmOrderStatusEnum {
 
-    INIT("I", "初始"),
+    INIT("I", "初始化"),
     PENDING("P", "处理中"),
     SUCCESS("S", "成功"),
     FAILURE("F", "失败"),
@@ -43,6 +43,18 @@ public enum ConfirmOrderStatusEnum {
 
     public String getDesc() {
         return desc;
+    }
+
+    /**
+     * 根据code获取枚举值
+     */
+    public static ConfirmOrderStatusEnum getByCode(String code) {
+        for (ConfirmOrderStatusEnum statusEnum : ConfirmOrderStatusEnum.values()) {
+            if (statusEnum.getCode().equals(code)) {
+                return statusEnum;
+            }
+        }
+        return null;
     }
 
 }

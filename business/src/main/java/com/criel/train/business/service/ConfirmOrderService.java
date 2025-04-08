@@ -460,11 +460,57 @@ public class ConfirmOrderService {
     /**
      * 降级方法
      *
-     * @param req 原方法参数
+     * @param dto 原方法参数
      * @param e
      */
-    private void confirmBlockHandler(ConfirmOrderSaveReq req, BlockException e) {
-        LOG.info("请求被限流:{}", req);
+    private void confirmBlockHandler(ConfirmOrderMQDto dto, BlockException e) {
+        LOG.info("请求被限流:{}", dto);
         throw new BusinessException(BusinessExceptionEnum.CONFIRM_ORDER_FLOW_EXCEPTION);
+    }
+
+    /**
+     * 前端查询订单
+     * 如果为成功/失败等最终状态，则返回状态信息，用负数表示：
+     * -1 成功； -2 失败； -3 无票； -4 取消
+     * 如果是中间状态，则返回前面排队的人数；其中对PENDING处理中返回0
+     *
+     * @param id
+     */
+    public Integer queryLineUpCount(long id) {
+        LOG.info("前端查询订单");
+        ConfirmOrder confirmOrder = confirmOrderMapper.selectByPrimaryKey(id);
+        if (confirmOrder == null) {
+            return -4;
+        }
+        ConfirmOrderStatusEnum confirmOrderStatusEnum = ConfirmOrderStatusEnum.getByCode(confirmOrder.getStatus());
+        if (confirmOrderStatusEnum == null) {
+            return -4;
+        }
+        int resultCount = switch (confirmOrderStatusEnum) {
+            case INIT -> Integer.MAX_VALUE;
+            case PENDING -> 0;
+            case SUCCESS -> -1;
+            case FAILURE -> -2;
+            case EMPTY -> -3;
+            case CANCEL -> -4;
+        };
+
+        // 计算排队第几位
+        if (resultCount == Integer.MAX_VALUE) {
+            ConfirmOrderExample confirmOrderExample = new ConfirmOrderExample();
+            // 计算数量需要所有PENDING处理中和INIT排队中订单
+            confirmOrderExample.or()
+                    .andDateEqualTo(confirmOrder.getDate())
+                    .andTrainCodeEqualTo(confirmOrder.getTrainCode())
+                    .andCreateTimeLessThan(confirmOrder.getCreateTime())
+                    .andStatusEqualTo(ConfirmOrderStatusEnum.INIT.getCode());
+            confirmOrderExample.or()
+                    .andDateEqualTo(confirmOrder.getDate())
+                    .andTrainCodeEqualTo(confirmOrder.getTrainCode())
+                    .andCreateTimeLessThan(confirmOrder.getCreateTime())
+                    .andStatusEqualTo(ConfirmOrderStatusEnum.PENDING.getCode());
+            return Math.toIntExact(confirmOrderMapper.countByExample(confirmOrderExample));
+        }
+        return resultCount;
     }
 }

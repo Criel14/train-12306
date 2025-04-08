@@ -46,7 +46,7 @@ public class BeforeConfirmOrderService {
      * @param req
      */
     @SentinelResource(value = "beforeConfirm", blockHandler = "beforeConfirmBlockHandler")
-    public void beforeConfirm(ConfirmOrderSaveReq req) {
+    public long beforeConfirm(ConfirmOrderSaveReq req) {
         // 校验令牌
         boolean validSkToken = skTokenService.validSkToken(req.getDate(), req.getTrainCode(), LoginMemberContext.getId());
         if (!validSkToken) {
@@ -80,6 +80,9 @@ public class BeforeConfirmOrderService {
 
         rocketMQTemplate.convertAndSend(RocketMQTopicConstant.CONFIRM_ORDER_TOPIC, JSON.toJSONString(confirmOrderMQDto));
         LOG.info("排队购票，已发送MQ");
+
+        // 返回订单ID
+        return confirmOrderId;
     }
 
     /**
