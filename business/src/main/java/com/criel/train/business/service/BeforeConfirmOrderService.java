@@ -18,6 +18,7 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -71,9 +72,13 @@ public class BeforeConfirmOrderService {
         confirmOrder.setTickets(JSON.toJSONString(req.getTickets()));
         confirmOrderMapper.insert(confirmOrder);
 
+        // 传递订单id
         req.setConfirmOrderId(confirmOrderId);
+        // 传递日志id
+        req.setLogId(MDC.get("LOG_ID"));
         // 向MQ发送购票的请求参数
         rocketMQTemplate.convertAndSend(RocketMQTopicConstant.CONFIRM_ORDER_TOPIC, JSON.toJSONString(req));
+
         LOG.info("排队购票，发送MQ");
     }
 

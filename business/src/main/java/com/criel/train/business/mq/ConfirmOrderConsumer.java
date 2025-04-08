@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +27,12 @@ public class ConfirmOrderConsumer implements RocketMQListener<MessageExt> {
     @Override
     public void onMessage(MessageExt messageExt) {
         byte[] body = messageExt.getBody();
-        log.info("收到消息:{}", new String(body));
         ConfirmOrderSaveReq req = JSON.parseObject(body, ConfirmOrderSaveReq.class);
+
+        // 赋值流水号（LOG_ID），同步生产者线程
+        MDC.put("LOG_ID", req.getLogId());
+        log.info("收到消息:{}", new String(body));
+
         confirmOrderService.confirm(req);
     }
 }
