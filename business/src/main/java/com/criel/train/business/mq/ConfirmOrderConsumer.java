@@ -9,6 +9,7 @@ import com.criel.train.common.constant.RocketMQTopicConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.annotation.RocketMQTransactionListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
