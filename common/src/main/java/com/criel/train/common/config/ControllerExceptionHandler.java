@@ -32,7 +32,7 @@ public class ControllerExceptionHandler {
     @ResponseBody
     public CommonResp exceptionHandler(Exception e) throws Exception{
         LOG.error("系统异常：", e);
-        //如果是在一次全局事务里出异常了，就不要包装返回值，将异常抛给调用方，让调用方回滚事务
+        //  如果是在一次全局事务里出异常了，就不要包装返回值，将异常抛给调用方，让调用方回滚事务
         if (StrUtil.isNotBlank(RootContext.getXID())) {
             throw e;
         }
