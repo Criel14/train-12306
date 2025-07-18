@@ -102,7 +102,7 @@ seata:
 
 #### 配置数据库
 
-项目中使用Seata的**AT模式**，需要在用到Seata的微服务模块中创建`undo_log`表（建表sql已在项目中的sql文件中给出，执行即可），表结构如下：
+项目中使用Seata的**AT模式**，需要在用到Seata的微服务模块中创建`undo_log`表（建表sql已在项目中的sql文件中和其他表一同给出，直接执行即可），表结构如下：
 
 ```sql
 CREATE TABLE `undo_log`
@@ -176,7 +176,7 @@ java -Dserver.port=18080 -Dcsp.sentinel.dashboard.server=localhost:18080 -Dproje
 
 ```
 NAMESRV_ADDR = localhost:9876
-ROCKETMQ_HOME = C:\TOOL1\rocketmq\rocketmq-all-5.3.2-bin-release
+ROCKETMQ_HOME = xxxx\xxx\rocketmq-all-5.3.2-bin-release
 ```
 
 按顺序启动`bin/`下的2个服务（双击或在cmd运行），第一个是`mqnamesrv.cmd`，第二个是`mqbroker.cmd`，可以编辑里面的内容，修改所需的内存大小等信息；
